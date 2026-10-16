@@ -36,6 +36,15 @@ module.exports = {
 | `await t.passo('descrição', async () => {...})` | bloco próprio registrado como passo |
 | `t.p`, `t.tela` | página do Playwright e ajudantes de tela, para algo bem específico |
 
+### Casos de limite e negativos (obrigatórios)
+Além dos casos da tarefa, toda suíte leva uma seção **"ADICIONADO — limites/negativos"** em volta de cada valor ou quantidade que a tarefa mexe. Bug achado aqui conta, mesmo fora do escopo (vai como "fora da tarefa"):
+- **reduzir abaixo do que já foi lançado** (ex.: quantidade/valor do pedido abaixo da antecipação vinculada; cancelar abaixo do faturado);
+- **passar do saldo** (antecipar mais que o saldo, entregar/devolver/cancelar mais que o disponível);
+- **ordem inversa ou repetida** (vincular antes de faturar e depois; estornar e baixar de novo; concluir duas vezes);
+- **editar depois** de faturar, antecipar, cancelar.
+
+Para cada um, conferir no banco que a validação barra **antes de gravar**: ação que grava na hora (ex.: Remover item na edição) e só é barrada no Concluir deixa o registro inconsistente — isso é bug.
+
 ### Boas práticas
 - **Cada caso cria o próprio dado** (pedido, nota, adiantamento). Só use `depende` quando o caso da tarefa é uma continuação (ex.: "editar o pedido do caso 1").
 - **Conferir no banco a cada etapa** que o caso descreve (ex.: "A pagar com 1/2 quitada" e "Pago com 2/2"), não só no fim.
