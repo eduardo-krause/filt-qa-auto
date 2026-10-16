@@ -23,7 +23,7 @@ suíte da tarefa (casos + esperado)  ──usa──▶  passos por tela (vendas
 | Resultado | `.../<NMTZ>/automacao/resultados/ultimo.md` | o que passou, o que falhou e a evidência |
 | Índice | `~/.claude/historico-validacoes/indice-testes-automatizados.md` | todos os casos automatizados, agrupados por tela |
 
-## Exemplo de resultado
+## Exemplo de resultado (ilustrativo — formato da saída, não é resultado real)
 
 ```
 AT https://erp-homologacao-nmtz-12195… · base … · front 5018 · DF-e ok · 3 caso(s)
