@@ -26,11 +26,11 @@ suíte da tarefa (casos + esperado)  ──usa──▶  passos por tela (vendas
 ## Exemplo de resultado (ilustrativo — formato da saída, não é resultado real)
 
 ```
-AT https://erp-homologacao-nmtz-12195… · base … · front 5018 · DF-e ok · 3 caso(s)
+AT https://erp-homologacao-nmtz-00000… · base … · front 5018 · DF-e ok · 3 caso(s)
 ✅ OK        1-DUP  Duplicata 30/60: Pago só com todas as parcelas quitadas (412s)
 ✅ OK        5      Duas entregas de 1 un: Pago só com as 4 parcelas quitadas (538s)
 ❌ FALHOU    R01    Reprovação 01: Concluir da edição parcial recalcula a situação na hora (201s)
-      ↳ pedido 311 ao concluir a remoção (sem reabrir): esperado {"PAGO":1,…}, obtido {"PAGO":0,…}
+      ↳ pedido 999 ao concluir a remoção (sem reabrir): esperado {"PAGO":1,…}, obtido {"PAGO":0,…}
 ```
 
 ## Instalação
