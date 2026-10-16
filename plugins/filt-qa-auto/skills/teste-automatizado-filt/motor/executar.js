@@ -95,8 +95,14 @@ const linhaCaso = (c) => `${resultado.ICONE[c.status] || ''} ${c.status.padEnd(9
     const dep = [].concat(caso.depende || []).map(String).find((d) => !resultados.has(d) || resultados.get(d).status !== 'OK');
     if (dep) { c.status = 'PULADO'; c.motivo = `depende do caso ${dep}, que não deu OK`; resultados.set(c.id, c); console.log(linhaCaso(c)); continue; }
     const t = contexto.criar({ p, suite, caso: c, pastasPassos, guardadosDe: (id) => (resultados.get(String(id)) || {}).guardados });
+    const limiteCaso = (suite.limiteCasoMin || 10) * 60000;
+    let relogio;
     try {
-      await caso.executar(t);
+      // nenhum caso pode prender a suíte: passou do limite, vira ERRO e segue para o próximo
+      await Promise.race([
+        caso.executar(t),
+        new Promise((_, rej) => { relogio = setTimeout(() => rej(new Error(`caso passou de ${limiteCaso / 60000} min (tela ou navegador sem responder)`)), limiteCaso); }),
+      ]);
     } catch (e) {
       c.erro = e.message.split('\n').slice(0, 4).join(' ');
       const ultimo = t.registro.passos[t.registro.passos.length - 1]; c.parouEm = ultimo && ultimo.passo;
@@ -105,6 +111,9 @@ const linhaCaso = (c) => `${resultado.ICONE[c.status] || ''} ${c.status.padEnd(9
       else if (e instanceof contexto.AtTravado || /PROBLEMA NO AT|BLOQUEADO|ALERTA/.test(e.message)) { c.status = 'BLOQUEADO'; r.interrompido = e.message; }
       else c.status = 'ERRO';
     }
+    clearTimeout(relogio);
+    // conferência registrada com { continuar: true } que deu errado também reprova o caso
+    if (c.status === 'OK' && t.registro.conferencias.some((x) => !x.ok)) { c.status = 'FALHOU'; c.erro = 'conferência(s) com valor diferente: ' + t.registro.conferencias.filter((x) => !x.ok).map((x) => x.descricao).join('; '); }
     Object.assign(c, { passos: t.registro.passos, conferencias: t.registro.conferencias, guardados: t.registro.guardados, notas: t.registro.notas, ms: Date.now() - ini });
     resultados.set(c.id, c);
     console.log(linhaCaso(c) + (c.status !== 'OK' ? `\n      ↳ ${c.erro}${c.parouEm ? `  [passo: ${c.parouEm}]` : ''}` : ''));

@@ -15,6 +15,12 @@ module.exports = {
   // Maior ID_NOTA_FISCAL atual (para achar as notas criadas depois de uma ação).
   async ultimoId(t) { return Number(await t.banco.valor('select coalesce(max(ID_NOTA_FISCAL),0) from NOTA_FISCAL')) || 0; },
 
+  // Quantas destas notas já têm a NF-e autorizada (NOTA_FISCAL_ELETRONICA.STATUS = 100).
+  async autorizadas(t, ids) {
+    if (!ids.length) return 0;
+    return Number(await t.banco.valor(`select count(*) from NOTA_FISCAL_ELETRONICA where STATUS = 100 and ID_NOTA_FISCAL in (${ids.map(() => '?').join(',')})`, ids)) || 0;
+  },
+
   // Notas do pedido criadas depois de `desdeId`: [{ ID_NOTA_FISCAL, NUMERO_DOCUMENTO }]
   async doPedido(t, { pedido, desdeId = 0 }) { return t.banco.consultar(notasSql, [desdeId, pedido]); },
 
@@ -65,7 +71,18 @@ module.exports = {
       }
     }
     await tela.botao(p, 'Finalizar', { escopo: dlg });
-    await tela.dropdown(p, p, 'Tipo do Frete', 'Sem Ocorr').catch(() => {});
+    await tela.dropdown(p, p, 'Tipo do Frete', 'Sem Ocorr').catch((e) => t.anotar('Tipo do Frete não preenchido: ' + e.message.slice(0, 120)));
+    // naturezas de devolução exigem "Informação Complementar": abre pela seta e escolhe a primeira (como no validador)
+    if (a.infoCompl !== false) {
+      const lab = p.locator('label:visible').filter({ hasText: /^\s*Informação Complementar\s*\*?\s*$/ }).first();
+      if (await lab.count()) {
+        const cont = lab.locator('xpath=ancestor::*[.//input][1]');
+        if (!(await cont.locator('input').first().inputValue().catch(() => ''))) {
+          await cont.locator('button:visible, .p-autocomplete-dropdown:visible').last().click(); await tela.pronto(p, 600);
+          await p.locator('.p-autocomplete-panel:visible li, li[role=option]:visible').first().click(); await tela.pronto(p, 400);
+        }
+      }
+    }
     let s = await tela.salvar(p);
     if (s.status === 'acerto_financeiro') {
       const d = await tela.dialogo(p);
@@ -76,6 +93,11 @@ module.exports = {
     }
     const sef = p.locator('.p-dialog:visible', { hasText: 'Confirmação da operação' });
     if (await sef.count()) { await sef.getByRole('button', { name: 'Fechar' }).first().click(); await tela.pronto(p); }
+    if (s.status !== 'salvo') {
+      const corpo = tela.limpo(await p.locator('body').innerText());
+      const i = corpo.indexOf('Campos obrigatórios');
+      throw new Error(`nota com referência não foi salva (status ${s.status}); avisos: ${[...s.toasts, ...s.dialogos].join(' | ').slice(0, 300) || 'nenhum'}${i >= 0 ? '; ' + corpo.slice(i, i + 250) : ''}`);
+    }
     const numero = await t.banco.valor('select NUMERO_DOCUMENTO from NOTA_FISCAL order by ID_NOTA_FISCAL desc limit 1');
     return { status: s.status, numero };
   },

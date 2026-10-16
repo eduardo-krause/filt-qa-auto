@@ -33,6 +33,9 @@ async function conectar() {
   // fecha abas que sobraram de uma execução anterior
   const abas = ctx.pages(); for (let i = 1; i < abas.length; i++) await abas[i].close().catch(() => {});
   const p = abas[0] || (await ctx.newPage());
+  // diálogo nativo do navegador (alert/confirm/"sair da página?") trava a aba se ninguém responder: aceitar sempre
+  ctx.on('page', (np) => np.on('dialog', (d) => d.accept().catch(() => {})));
+  p.on('dialog', (d) => d.accept().catch(() => {}));
   await p.setViewportSize({ width: 1600, height: 900 });
   return { navegador: b, contexto: ctx, p };
 }

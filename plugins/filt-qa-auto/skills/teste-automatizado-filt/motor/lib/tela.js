@@ -105,7 +105,7 @@ const autocompleteRotulo = (p, escopo, rotulo, texto, opcao) => autocomplete(p, 
 
 // Dropdown PrimeNG (p-dropdown) pelo rótulo.
 async function dropdown(p, escopo, rotulo, opcao) {
-  const lab = escopo.locator(`label:has-text("${rotulo}")`).first();
+  const lab = escopo.locator(`label:visible:has-text("${rotulo}")`).first();
   const id = await lab.getAttribute('for');
   const d = id ? escopo.locator(`p-dropdown#${id} .p-dropdown`).first() : lab.locator('xpath=following::*[contains(@class,"p-dropdown")][1]');
   await d.click(); await esperar(p, 600);

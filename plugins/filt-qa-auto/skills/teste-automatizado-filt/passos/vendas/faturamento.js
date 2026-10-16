@@ -19,6 +19,12 @@ async function acertoCartao(t, dlg, { valor, parcelas = 1, operadora = 'ACCORD',
   const cc = tela.campo(dlg, 'Conta Contábil');
   if ((await cc.count()) && !(await cc.inputValue())) await tela.autocomplete(p, cc, contaContabil.slice(0, 8), contaContabil);
   await tela.botao(p, 'Adicionar', { escopo: dlg });
+  // o cartão vai para "Cartões Adicionados"; o Salvar da forma leva para o Resumo (Total Pago)
+  await dlg.getByRole('button', { name: 'Salvar', exact: true }).first().click(); await tela.pronto(p, 800);
+  const resumo = tela.limpo(((await dlg.innerText()).match(/Total Pago[\s\S]{0,60}/) || [''])[0]);
+  if (!new RegExp('Total Pago R\$ ' + String(valor.toFixed(2)).replace('.', ',')).test(resumo.replace(/\./g, '').replace(/(\d),(\d{2})/, '$1,$2'))) {
+    t.anotar('resumo do acerto com cartão: ' + resumo);
+  }
 }
 
 module.exports = {
@@ -50,7 +56,13 @@ module.exports = {
     const aviso = p.locator('.p-dialog:visible').filter({ hasText: 'antecipações cadastradas' });
     if (await aviso.count()) { await aviso.last().getByRole('button', { name: 'Ok', exact: true }).click(); await tela.pronto(p, 800); }
     let resumo = '';
-    const dlg = p.locator('.p-dialog:visible').filter({ hasText: 'Acerto Financeiro' }).last();
+    let dlg = p.locator('.p-dialog:visible').filter({ hasText: 'Acerto Financeiro' }).last();
+    // na etapa Faturamento o acerto é a seção "Financeiro"; o diálogo "Acerto Financeiro" abre pelo Adicionar dela
+    if (cartao && !(await dlg.count())) {
+      await p.getByRole('button', { name: 'Adicionar', exact: true }).last().click(); await tela.pronto(p, 800);
+      dlg = p.locator('.p-dialog:visible').filter({ hasText: 'Acerto Financeiro' }).last();
+      await dlg.waitFor({ timeout: 15000 });
+    }
     if (await dlg.count()) {
       if (cartao) await acertoCartao(t, dlg, cartao);
       resumo = tela.limpo(((await dlg.innerText()).match(/Total[\s\S]{0,160}/) || [''])[0]);
@@ -58,8 +70,18 @@ module.exports = {
     }
     await tela.botao(p, 'Gerar Nota', { noDialogo: false, qual: 'last' });
     await tela.pronto(p, 2000, { limite: 180000 });
-    const notas = await nota.doPedido(t, { pedido, desdeId: desde });
+    // a nota nasce no banco antes da transmissão: só segue com a NF-e autorizada (sair da tela antes interrompe o envio)
+    let notas = [];
+    for (const t0 = Date.now(); Date.now() - t0 < 180000; await p.waitForTimeout(3000)) {
+      notas = await nota.doPedido(t, { pedido, desdeId: desde });
+      if (notas.length && (await nota.autorizadas(t, notas.map((n) => n.ID_NOTA_FISCAL))) === notas.length) break;
+      const erro = (await tela.toasts(p)).find((x) => /erro|rejei|não/i.test(x));
+      if (erro && !notas.length) throw new Error('Gerar Nota: ' + erro);
+    }
     if (!notas.length) throw new Error('nenhuma nota nova do pedido depois do Gerar Nota (conferir se abriu em outra aba ou deu erro)');
+    if ((await nota.autorizadas(t, notas.map((n) => n.ID_NOTA_FISCAL))) < notas.length) {
+      throw new Error(`nota ${notas.map((n) => n.NUMERO_DOCUMENTO).join(', ')} criada mas não autorizada em 3 min (avisos: ${(await tela.toasts(p)).join(' | ') || 'nenhum'})`);
+    }
     const out = [];
     for (const n of notas) out.push({ id: n.ID_NOTA_FISCAL, numero: n.NUMERO_DOCUMENTO, titulos: await nota.titulos(t, { id: n.ID_NOTA_FISCAL }) });
     return { notas: out, acerto: resumo };
