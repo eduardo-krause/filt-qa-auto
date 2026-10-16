@@ -9,6 +9,7 @@ module.exports = {
     await tela.abrir(p, '/vendas/aprovacao-pedidos');
     const empresa = cfg.lerSessao().empresa || '';
     const linha = p.locator('tbody tr').filter({ hasText: new RegExp(`${empresa.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+${pedido}\\s`) }).first();
+    await linha.waitFor({ timeout: 30000 }).catch(() => {});   // a lista carrega depois da tela
     if (!(await linha.count())) throw new Error(`pedido ${pedido} não aparece na Aprovação Pedido`);
     await linha.getByText('APROVAR', { exact: true }).evaluate((e) => (e.closest('button') || e).click()); await tela.pronto(p);
     const dlg = await tela.dialogo(p);

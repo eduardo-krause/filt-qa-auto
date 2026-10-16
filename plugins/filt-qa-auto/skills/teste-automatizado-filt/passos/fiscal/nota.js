@@ -9,7 +9,7 @@ const notasSql = `select n.ID_NOTA_FISCAL, n.NUMERO_DOCUMENTO, n.ID_SITUACAO_DOC
 const titulosSql = `select d.ID_DOCUMENTO_FINANCEIRO, d.NUMERO_DOCUMENTO, d.TIPO_DOCUMENTO_FINANCEIRO, d.STATUS, d.VALOR_DOCUMENTO_FINANCEIRO
   from NOTA_FISCAL n join NOTA_FISCAL_DOCUMENTO_FINANCEIRO x on x.ID_NOTA_FISCAL = n.ID_NOTA_FISCAL
   join DOCUMENTO_FINANCEIRO d on d.ID_DOCUMENTO_FINANCEIRO = x.ID_DOCUMENTO_FINANCEIRO
-  where n.NUMERO_DOCUMENTO = ? order by d.NUMERO_DOCUMENTO`;
+  where n.ID_NOTA_FISCAL = ? order by d.NUMERO_DOCUMENTO`;
 
 module.exports = {
   // Maior ID_NOTA_FISCAL atual (para achar as notas criadas depois de uma ação).
@@ -18,8 +18,9 @@ module.exports = {
   // Notas do pedido criadas depois de `desdeId`: [{ ID_NOTA_FISCAL, NUMERO_DOCUMENTO }]
   async doPedido(t, { pedido, desdeId = 0 }) { return t.banco.consultar(notasSql, [desdeId, pedido]); },
 
-  // Títulos (duplicatas, dinheiro, cartão) de uma nota pelo número: [{ NUMERO_DOCUMENTO: '01000000482-1/2', STATUS, ... }]
-  async titulos(t, { numero }) { return t.banco.consultar(titulosSql, [numero]); },
+  // Títulos (duplicatas, dinheiro, cartão) de uma nota pelo ID_NOTA_FISCAL (o número da nota se repete entre séries/modelos):
+  // [{ NUMERO_DOCUMENTO: '01000000482-1/2', TIPO_DOCUMENTO_FINANCEIRO, STATUS, VALOR_DOCUMENTO_FINANCEIRO }]
+  async titulos(t, { id }) { if (!id) throw new Error('nota.titulos precisa do id (ID_NOTA_FISCAL)'); return t.banco.consultar(titulosSql, [id]); },
 
   // Na aba de uma nota já preenchida: Ok do aviso, Concluir do acerto proposto, Salvar e fecha a confirmação Sefaz.
   async salvarAberta(t) {

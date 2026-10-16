@@ -31,18 +31,24 @@ module.exports = {
     const desde = await nota.ultimoId(t);
     await tela.abrir(p, '/vendas/pedido');
     await p.getByText('FATURAMENTO').first().click(); await tela.pronto(p, 800);
-    // a ordem aparece como "<ordem> - <pedido>"; se o cliente estiver recolhido, expande o grupo
-    const reOrdem = new RegExp(`\\d - ${pedido}(\\D|$)`);
-    if (!(await p.locator('table tbody tr').filter({ hasText: reOrdem }).count())) {
-      await p.locator('table tbody tr').filter({ hasText: cliente }).first().locator('button, i').first().click();
-      await tela.pronto(p, 600);
-    }
+    // linhas agrupadas por cliente (recolhidas): o grupo expande pelo link a.mr-2 (ícone ph-caret-right).
+    // A ordem aparece como "<ordem> <seq> - <pedido> <data> ..."; no texto da linha o pedido vem colado na data ("0 - 31316/10/2026")
+    const reOrdem = new RegExp(`\\d - ${pedido}(\\d{2}/\\d{2}/\\d{4}|\\s*\\d{2}/\\d{2}/|\\D|$)`);
     const linha = p.locator('table tbody tr').filter({ hasText: reOrdem }).last();
-    if (!(await linha.count())) throw new Error(`ordem de entrega do pedido ${pedido} não aparece no FATURAMENTO`);
+    for (let tentativa = 0; tentativa < 3 && !(await linha.count()); tentativa++) {
+      const grupo = p.locator('table tbody tr').filter({ hasText: cliente }).first();
+      await grupo.waitFor({ timeout: 30000 });
+      await grupo.locator('a.mr-2, .expand-icon').first().click(); await tela.pronto(p, 800);
+      await linha.waitFor({ timeout: 10000 }).catch(() => {});
+    }
+    if (!(await linha.count())) throw new Error(`ordem de entrega do pedido ${pedido} não aparece no FATURAMENTO (grupo ${cliente})`);
     await linha.scrollIntoViewIfNeeded(); await linha.locator('.p-checkbox-box').first().click();
     await p.getByText('Faturar', { exact: true }).click(); await tela.pronto(p, 800);
     await tela.botao(p, 'Próximo', { noDialogo: false });
     await tela.pronto(p, 1500);
+    // pedido com antecipação: aviso "Existem pedidos com antecipações cadastradas." [Ok] fica por cima do Gerar Nota
+    const aviso = p.locator('.p-dialog:visible').filter({ hasText: 'antecipações cadastradas' });
+    if (await aviso.count()) { await aviso.last().getByRole('button', { name: 'Ok', exact: true }).click(); await tela.pronto(p, 800); }
     let resumo = '';
     const dlg = p.locator('.p-dialog:visible').filter({ hasText: 'Acerto Financeiro' }).last();
     if (await dlg.count()) {
@@ -55,7 +61,7 @@ module.exports = {
     const notas = await nota.doPedido(t, { pedido, desdeId: desde });
     if (!notas.length) throw new Error('nenhuma nota nova do pedido depois do Gerar Nota (conferir se abriu em outra aba ou deu erro)');
     const out = [];
-    for (const n of notas) out.push({ numero: n.NUMERO_DOCUMENTO, titulos: await nota.titulos(t, { numero: n.NUMERO_DOCUMENTO }) });
+    for (const n of notas) out.push({ id: n.ID_NOTA_FISCAL, numero: n.NUMERO_DOCUMENTO, titulos: await nota.titulos(t, { id: n.ID_NOTA_FISCAL }) });
     return { notas: out, acerto: resumo };
   },
 };

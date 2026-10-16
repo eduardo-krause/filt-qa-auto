@@ -5,9 +5,8 @@
 
 const situacaoSql = 'select ID_PEDIDO, STATUS_PEDIDO, PAGO, VALOR_TOTAL_CONTABIL from PEDIDO where ID_PEDIDO = ?';
 
-async function abrirCarrinho(t, pedido) {
-  if (!t.p.url().includes('carrinho?id=' + pedido + '') || /edicao/i.test(t.p.url())) await t.tela.abrir(t.p, '/vendas/carrinho?id=' + pedido);
-}
+// Sempre recarrega o carrinho: depois de outra aba (GERAR NOTA) ou de outra tela, a página aberta pode estar desatualizada.
+async function abrirCarrinho(t, pedido) { await t.tela.abrir(t.p, '/vendas/carrinho?id=' + pedido); }
 
 // Pesquisa o item na tela de busca, informa a quantidade e ADICIONAR (+ desconto unitário opcional) → volta ao Carrinho.
 async function incluirItem(t, { item, qtd, casas = 0, desconto }) {
@@ -21,14 +20,20 @@ async function incluirItem(t, { item, qtd, casas = 0, desconto }) {
   await tela.digitar(p, q, tela.qtd(qtd, casas));
   await p.getByText('ADICIONAR', { exact: true }).first().click();
   await tela.pronto(p, 800);
-  if (desconto) {
-    const painel = p.locator('.p-dialog:visible, .p-sidebar:visible').last();
-    const d = painel.locator('label:has-text("Desconto Unit"), label:has-text("Desconto unit")').first().locator('xpath=following::input[1]');
-    await tela.digitar(p, d, tela.moeda(desconto, 5));
-  }
-  // painel de detalhe do item: Confirmar (quando aparece)
-  const conf = p.getByText('Confirmar', { exact: true });
-  if (await conf.count()) { await conf.last().click(); await tela.pronto(p); }
+  // ADICIONAR abre o painel lateral "Adicionar Item ao carrinho" (desconto unitário + Confirmar).
+  // Tudo DENTRO do painel: na página há outros "Confirmar" escondidos (diálogo de condições de venda).
+  const painel = p.locator('.p-sidebar:visible').filter({ hasText: 'Adicionar Item ao carrinho' }).last();
+  await painel.waitFor({ timeout: 15000 }).catch(() => {});
+  if (await painel.count()) {
+    if (desconto) {
+      // "Desconto Unitário" em R$ = input#valorDesconto2 (máscara com 5 casas)
+      await tela.digitar(p, painel.locator('input#valorDesconto2'), tela.moeda(desconto, 5));
+      await tela.pronto(p, 500);
+    }
+    await painel.getByRole('button', { name: /Confirmar/ }).click();
+    await painel.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
+    await tela.pronto(p);
+  } else if (desconto) throw new Error('o painel "Adicionar Item ao carrinho" não abriu — não deu para informar o desconto');
 }
 
 module.exports = {
@@ -46,9 +51,13 @@ module.exports = {
     await tela.autocompleteRotulo(p, dlg, 'Forma de pagamento', a.forma);
     if (a.parcelamento) await tela.autocomplete(p, p.locator('input#formaParcelamento'), a.parcelamento);
     await p.keyboard.press('Escape');
-    if (a.dataPagamento) await tela.data(p, p.locator('input#dataPagamento'), a.dataPagamento);
+    // Data pagamento é obrigatória mesmo à vista (padrão: hoje)
+    await tela.data(p, p.locator('input#dataPagamento'), a.dataPagamento || t.hoje());
     await tela.botao(p, 'Confirmar', { escopo: dlg });
-    await p.waitForURL(/[?&]id=\d+/, { timeout: 60000 });
+    // o Filt troca de tela sem recarregar a página: espera a URL ganhar o id do pedido
+    await p.waitForFunction(() => /[?&]id=\d+/.test(location.href), null, { timeout: 60000 }).catch(async () => {
+      throw new Error('pedido não foi criado após Confirmar as condições de venda: ' + (await tela.textoDialogos(p)).join(' | '));
+    });
     const pedido = Number(new URL(p.url()).searchParams.get('id'));
     t.guardar('pedido', pedido);
     for (const it of a.itens || []) await incluirItem(t, it);
@@ -100,10 +109,11 @@ module.exports = {
     await tela.botao(p, 'Carrinho', { noDialogo: false });
   },
 
-  // Em edição: remove a linha do carrinho que contém `texto` (ex.: "1,000 -" ou o valor "100,00") e confirma Excluir.
+  // Em edição: remove a ÚLTIMA linha do carrinho que contém `texto` (ex.: "CORDA 1,000") e confirma Excluir.
+  // Na edição parcial a linha nova aparece "8 CORDA 1,000 - R$ 100,00" ("-" = nada entregue); sem faturamento, "CORDA 1,000 R$ ...".
   async removerItem(t, { texto }) {
     const { p, tela } = t;
-    const ok = await p.evaluate((x) => { const tr = [...document.querySelectorAll('tr')].find((e) => e.innerText.replace(/\s+/g, ' ').includes(x)); const a = tr && tr.querySelector('a[data-title=Remover], [title="Remover Item"]'); if (a) a.click(); return !!a; }, texto);
+    const ok = await p.evaluate((x) => { const trs = [...document.querySelectorAll('tr')].filter((e) => e.innerText.replace(/\s+/g, ' ').includes(x) && e.querySelector('a[data-title=Remover], [title="Remover"], [title="Remover Item"]')); const tr = trs[trs.length - 1]; const a = tr && tr.querySelector('a[data-title=Remover], [title="Remover"], [title="Remover Item"]'); if (a) a.click(); return !!a; }, texto);
     if (!ok) throw new Error(`linha com "${texto}" não encontrada no carrinho`);
     await tela.pronto(p);
     await tela.confirmar(p, ['Excluir', 'Sim']);
@@ -136,9 +146,11 @@ module.exports = {
     const { p, tela } = t;
     await abrirCarrinho(t, pedido);
     await tela.menuKebab(p, 'Cancelar');
-    const dlg = await tela.dialogo(p);
+    const dlg = p.locator('.p-dialog:visible').filter({ hasText: 'Cancelamento Pedido' }).last();
+    await dlg.waitFor({ timeout: 15000 });
     const m = dlg.locator('textarea').first(); await m.click(); await p.keyboard.type(motivo, { delay: 15 });
-    if (todos) await tela.botao(p, 'Cancelar Todos', { escopo: dlg });
+    // o nome acessível do botão inclui o ícone: procurar pelo texto
+    if (todos) { await dlg.getByRole('button', { name: /Cancelar Todos/ }).click(); await tela.pronto(p); }
     else {
       const inps = dlg.locator('tbody input');
       for (let k = 0; k < qtds.length; k++) if (qtds[k]) await tela.digitar(p, inps.nth(k), tela.qtd(qtds[k], casas));
@@ -154,9 +166,11 @@ module.exports = {
     const { p, tela } = t;
     tela.exigirDfe();
     await tela.abrir(p, '/vendas/carrinho?id=' + pedido);
-    const nova = p.context().waitForEvent('page', { timeout: 30000 });
+    const nova = p.context().waitForEvent('page', { timeout: 60000 });
+    nova.catch(() => {});   // se o clique falhar antes, a espera não pode derrubar o motor
     await tela.botao(p, 'GERAR NOTA', { noDialogo: false });
-    const q = await nova; await q.waitForLoadState('domcontentloaded');
+    const q = await nova.catch(() => { throw new Error('GERAR NOTA não abriu a nota em outra aba em 60 s'); });
+    await q.waitForLoadState('domcontentloaded');
     require('../../motor/lib/rede').instalar(q);
     try {
       await tela.pronto(q, 1500);

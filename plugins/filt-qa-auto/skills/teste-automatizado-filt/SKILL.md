@@ -20,6 +20,13 @@ Usa o mesmo `~/.claude/filt-qa/config.json` do validador (só lê), mas tem sess
 
 Guia para escrever suíte e passo: `referencias/escrever-suite.md` (ler ao montar ou alterar uma suíte).
 
+## Conhecimento do sistema e critérios — vêm do plugin `filt-qa` (não copiar para cá)
+Esta skill **não tem regras próprias do sistema**: usa as que a equipe já mantém no plugin `filt-qa` (precisa estar instalado).
+- **Como o sistema funciona** (fluxos de tela, rotas, componentes, onde cada dado fica no banco, regras de negócio confirmadas): skill **`regras-sistema-filt`**. Ler as referências da rotina **antes** de montar a suíte e antes de escrever ou consertar um passo; o `esperado` dos casos e as consultas de conferência partem dali.
+- **O que é e o que não é bug** e as regras invioláveis: seções "Regras invioláveis" e "Critérios de julgamento" do `SKILL.md` da skill **`validar-tarefa-filt`**. Valem para analisar todo caso que não der OK (ex.: estado intermediário não é bug; conferir nova aba antes de reprovar; permissão se valida pela tela).
+- **Fluxo novo descoberto** ao montar ou consertar um passo (botão, painel, máscara, rota, tabela): anotar em `~/.claude/filt-qa/fluxos-novos.md` com a data e o tipo, como manda o validador — `[fato]` sozinho; `[regra]` (regra de negócio) **só depois de perguntar à pessoa**; `[critério]` quando a pessoa decide o que é ou não bug. Dali vai para a equipe pelo `/compartilhar-regras`. Nunca escrever regra de sistema nesta skill.
+- Os passos (`passos/`) guardam só **como operar** a tela; o **porquê** (regra) fica nas referências do `filt-qa`.
+
 ## Passo inicial — preparar
 1. `~/.claude/filt-qa/config.json` precisa existir (é criado pelo validador). Se não existir, mandar a pessoa rodar `/validar-tarefa-filt` uma vez.
 2. Na pasta `motor/`: se não houver `node_modules`, rodar `npm install` (instala só o `mysql2`; o Playwright é o do validador).

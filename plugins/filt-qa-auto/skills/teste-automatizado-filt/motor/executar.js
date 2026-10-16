@@ -52,6 +52,9 @@ function selecionar() {
   return sel;
 }
 
+// promessa rejeitada que ficou sem dono num passo (ex.: espera de aba nova) não pode derrubar a suíte inteira
+process.on('unhandledRejection', (e) => { console.log('      (aviso: erro solto ignorado — ' + String(e && e.message || e).split('\n')[0] + ')'); });
+
 const linhaCaso = (c) => `${resultado.ICONE[c.status] || ''} ${c.status.padEnd(9)} ${String(c.id).padEnd(6)} ${c.titulo} (${Math.round(c.ms / 1000)}s)`;
 
 (async () => {
@@ -71,6 +74,11 @@ const linhaCaso = (c) => `${resultado.ICONE[c.status] || ''} ${c.status.padEnd(9
     r.versaoFront = await p.evaluate(() => (performance.getEntriesByType('resource').map((e) => e.name).find((n) => /main\.js\?version=/.test(n)) || '').replace(/.*version=/, '')).catch(() => null);
     const dfe = await banco.conferirDfe();
     if (!dfe.ok) throw new Error(dfe.bloqueio);
+    // preparar(t): conferências antes dos casos (estoque, cadastros...). Erro aqui = nada roda, com o motivo.
+    if (typeof suite.preparar === 'function') {
+      const tp = contexto.criar({ p, suite, caso: { id: 'preparar' }, pastasPassos, guardadosDe: () => null });
+      await suite.preparar(tp);
+    }
     console.log(`AT ${suite.at.url} · base ${s.empresa} · ${s.banco} · front ${r.versaoFront || '?'} · DF-e ok · ${selecionados.length} caso(s)`);
   } catch (e) {
     r.interrompido = e.message; salvar();

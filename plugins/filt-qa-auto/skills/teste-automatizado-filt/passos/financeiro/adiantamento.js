@@ -7,8 +7,9 @@ module.exports = {
     const { p, tela } = t;
     const antes = Number(await t.banco.valor('select coalesce(max(ID_DOCUMENTO_FINANCEIRO),0) from DOCUMENTO_FINANCEIRO')) || 0;
     await tela.abrir(p, '/financeiro/adiantamentos/form');
-    await tela.autocompleteRotulo(p, p, 'Pessoa', pessoa);
-    await tela.digitar(p, tela.campo(p, 'Valor'), tela.moeda(valor));
+    await p.locator('input#pessoa').waitFor({ timeout: 60000 });
+    await tela.autocomplete(p, p.locator('input#pessoa'), pessoa);
+    await tela.digitar(p, p.locator('input#valor'), tela.moeda(valor));
     let s = await tela.salvar(p);
     if (s.status === 'acerto_financeiro') {
       const d = await tela.dialogo(p);

@@ -12,7 +12,9 @@ async function pronto(p, folga = 400, opcoes) { await rede.ocioso(p, opcoes); if
 
 async function abrir(p, rota) {
   const base = cfg.lerSessao().base || new URL(p.url()).origin;
+  const t0 = Date.now();
   await p.goto(base + rota, { waitUntil: 'domcontentloaded' });
+  rede.esquecerAnteriores(p, t0);
   await pronto(p, 800);
 }
 
@@ -23,16 +25,22 @@ async function toasts(p) { return (await p.locator('.p-toast-message').allInnerT
 async function fecharToasts(p) { const x = p.locator('.p-toast-icon-close:visible, .p-toast-message button:visible'); const n = await x.count(); for (let i = 0; i < n; i++) await x.nth(0).click().catch(() => {}); }
 
 // Botão pelo nome exato (no diálogo aberto, se houver e `noDialogo` não for false). qual: 'first' | 'last' | número.
-async function botao(p, nome, { escopo, qual = 'first', noDialogo = true, force = false } = {}) {
-  let alvo = escopo;
-  if (!alvo && noDialogo) { const d = await dialogo(p); if (d && (await d.getByRole('button', { name: nome, exact: true }).count())) alvo = d; }
-  const bts = (alvo || p).getByRole('button', { name: nome, exact: true });
-  const n = await bts.count();
-  if (!n) throw new Error(`botão "${nome}" não encontrado`);
-  // só os visíveis contam (a tela costuma ter cópias escondidas)
-  const vis = [];
-  for (let i = 0; i < n; i++) if (await bts.nth(i).isVisible()) vis.push(i);
-  if (!vis.length) throw new Error(`botão "${nome}" existe mas não está visível`);
+// Espera até `espera` ms o botão aparecer (a tela costuma desenhar depois que as chamadas terminam).
+async function botao(p, nome, { escopo, qual = 'first', noDialogo = true, force = false, espera = 30000 } = {}) {
+  const t0 = Date.now(); let bts; let vis = [];
+  while (true) {
+    let alvo = escopo;
+    if (!alvo && noDialogo) { const d = await dialogo(p); if (d && (await d.getByRole('button', { name: nome, exact: true }).count())) alvo = d; }
+    bts = (alvo || p).getByRole('button', { name: nome, exact: true });
+    const n = await bts.count();
+    // só os visíveis contam (a tela costuma ter cópias escondidas)
+    vis = [];
+    for (let i = 0; i < n; i++) if (await bts.nth(i).isVisible()) vis.push(i);
+    const precisa = typeof qual === 'number' ? qual + 1 : 1;
+    if (vis.length >= precisa) break;
+    if (Date.now() - t0 > espera) throw new Error(n ? `botão "${nome}" existe mas não está visível` : `botão "${nome}" não encontrado`);
+    await esperar(p, 500);
+  }
   const idx = qual === 'last' ? vis[vis.length - 1] : typeof qual === 'number' ? vis[qual] : vis[0];
   await bts.nth(idx).click({ force });
   await pronto(p);
@@ -49,8 +57,8 @@ async function confirmar(p, nomes = ['Sim', 'Confirmar']) {
 
 async function clicarTexto(p, texto, escopo) { await (escopo || p).getByText(texto, { exact: true }).first().click(); await pronto(p); }
 
-// Input que vem logo depois do rótulo (padrão das telas do Filt).
-function campo(escopo, rotulo, n = 0) { return escopo.locator(`label:has-text("${rotulo}")`).nth(n).locator('xpath=following::input[1]'); }
+// Input que vem logo depois do rótulo visível (padrão das telas do Filt).
+function campo(escopo, rotulo, n = 0) { return escopo.locator(`label:visible:has-text("${rotulo}")`).nth(n).locator('xpath=following::input[1]'); }
 
 // Digita substituindo o conteúdo. Campos com máscara (quantidade/moeda) recebem só dígitos.
 async function digitar(p, inp, valor, { tab = true, atraso = 30 } = {}) {
@@ -69,12 +77,24 @@ async function data(p, inp, valor) { await inp.click(); await esperar(p, 200); a
 
 // Autocomplete: digita (até 12 letras) e escolhe a opção que contém `opcao` (padrão: o próprio texto).
 async function autocomplete(p, inp, texto, opcao) {
-  await inp.scrollIntoViewIfNeeded(); await inp.click(); await inp.fill('');
-  await p.keyboard.type(String(texto).slice(0, 12), { delay: 40 });
-  await pronto(p, 600);
+  await inp.waitFor({ timeout: 30000 });
   const alvo = String(opcao || texto);
   const op = p.locator('.p-autocomplete-panel:visible li, .p-autocomplete-items li, li[role=option]:visible').filter({ hasText: alvo }).first();
-  if (await op.count()) await op.click();
+  // até 3 tentativas: logo depois de abrir a tela o campo às vezes ainda não busca
+  for (let tentativa = 0; tentativa < 3; tentativa++) {
+    await inp.click(); await inp.fill('');
+    await p.keyboard.type(String(texto).slice(0, 12), { delay: 40 });
+    await pronto(p, 600);
+    await op.waitFor({ timeout: 5000 }).catch(() => {});
+    if (await op.count()) break;
+  }
+  if (await op.count()) {
+    // prefere a opção IGUAL ao texto ("30/60" não pode pegar "30/60/90"); algumas listas trazem o código colado na frente
+    const todas = p.locator('.p-autocomplete-panel:visible li, .p-autocomplete-items li, li[role=option]:visible');
+    const textos = (await todas.allInnerTexts()).map((x) => limpo(x));
+    const i = textos.findIndex((x) => x === alvo || x.replace(/^\d+\s*(?=[A-Za-zÀ-ú0-9])/, '') === alvo || x.replace(/^\d+\s*-\s*/, '') === alvo);
+    if (i >= 0) await todas.nth(i).click(); else await op.click();
+  }
   else if (!(await inp.inputValue()).includes(alvo)) {
     const vistas = (await p.locator('.p-autocomplete-panel:visible li, li[role=option]:visible').allInnerTexts()).map(limpo).slice(0, 10);
     throw new Error(`opção "${alvo}" não encontrada no autocomplete (opções: ${vistas.join(' | ') || 'nenhuma'})`);

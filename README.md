@@ -34,7 +34,7 @@ AT https://erp-homologacao-nmtz-12195… · base … · front 5018 · DF-e ok ·
 ```
 
 ## Instalação
-1. Ter o validador (`filt-qa`) já configurado — este plugin usa o mesmo `~/.claude/filt-qa/config.json` (só leitura).
+1. Ter o plugin `filt-qa` instalado e configurado — este plugin usa o mesmo `~/.claude/filt-qa/config.json` (só leitura) e as regras do sistema e critérios de julgamento das skills `regras-sistema-filt` e `validar-tarefa-filt`.
 2. No Claude Code: `/plugin marketplace add <URL deste repositório>` e `/plugin install filt-qa-auto@filt-qa-auto`.
 3. Na primeira vez, a skill roda `npm install` na pasta `motor/` (instala o `mysql2`).
 
