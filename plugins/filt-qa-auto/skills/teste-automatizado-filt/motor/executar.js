@@ -69,7 +69,7 @@ const linhaCaso = (c) => `${resultado.ICONE[c.status] || ''} ${c.status.padEnd(9
   const { p } = await navegador.conectar();
   rede.instalar(p);
   try {
-    const s = await login(p, { tarefa: suite.tarefa, url: suite.at.url, base: suite.at.base, usuario: suite.at.usuario });
+    const s = await login(p, { tarefa: suite.tarefa, url: suite.at.url, base: suite.at.base, demanda: suite.at.demanda, usuario: suite.at.usuario });
     r.banco = s.banco;
     r.versaoFront = await p.evaluate(() => (performance.getEntriesByType('resource').map((e) => e.name).find((n) => /main\.js\?version=/.test(n)) || '').replace(/.*version=/, '')).catch(() => null);
     const dfe = await banco.conferirDfe();

@@ -1,18 +1,20 @@
 // Login no AT da própria tarefa. Regras:
 //  - só o AT da tarefa da suíte (URL com nmtz-<número da tarefa>); produção é bloqueada;
+//    exceção: AT do épico/tarefa-mãe, quando a pessoa indica (suíte declara at.demanda: "NMTZ-<número do AT>");
 //  - a base (empresa do login) é a que a pessoa informou na suíte;
 //  - se o AT der problema, para com a mensagem para a pessoa corrigir — nunca procura outro AT.
 const cfg = require('./config');
 const tela = require('./tela');
 
-module.exports = async function login(p, { tarefa, url, base, usuario = 'principal' }) {
+module.exports = async function login(p, { tarefa, url, base, demanda, usuario = 'principal' }) {
   const numero = (String(tarefa).match(/NMTZ-(\d+)/i) || [])[1];
   if (!numero) throw new Error('a suíte precisa de tarefa: "NMTZ-<número>"');
   if (cfg.tarefa !== `NMTZ-${numero}`) throw new Error(`BLOQUEADO: FILT_QA_TAREFA=${cfg.tarefa}, mas a suíte é da NMTZ-${numero}.`);
   if (!url || !base) throw new Error('a suíte precisa de at: { url, base } — a URL do AT e a base informadas pela pessoa');
   if (/filterp\.com\.br/i.test(url)) throw new Error('BLOQUEADO: URL de produção. A suíte só roda no AT da tarefa.');
   const nUrl = (String(url).match(/nmtz-(\d+)/i) || [])[1];
-  if (nUrl && nUrl !== numero) throw new Error(`BLOQUEADO: a URL é do AT nmtz-${nUrl}, mas a tarefa é NMTZ-${numero}. Pedir a URL certa à pessoa.`);
+  const nDemanda = (String(demanda || '').match(/NMTZ-(\d+)/i) || [])[1];
+  if (nUrl && nUrl !== numero && nUrl !== nDemanda) throw new Error(`BLOQUEADO: a URL é do AT nmtz-${nUrl}, mas a tarefa é NMTZ-${numero}. Pedir a URL certa à pessoa (se for o AT do épico indicado por ela, declarar at.demanda na suíte).`);
   const origem = new URL(url).origin;
   const problema = (o) => new Error(`PROBLEMA NO AT DA TAREFA — ${o}. Reportar à pessoa para corrigir o AT (não usar outro AT).`);
 
