@@ -107,6 +107,8 @@ const linhaCaso = (c) => `${resultado.ICONE[c.status] || ''} ${c.status.padEnd(9
       c.erro = e.message.split('\n').slice(0, 4).join(' ');
       const ultimo = t.registro.passos[t.registro.passos.length - 1]; c.parouEm = ultimo && ultimo.passo;
       if (e.evidencia) c.evidencia = e.evidencia;
+      // caiu para o login no meio do caso: outro login com o mesmo usuário (ex.: validador) derrubou a sessão
+      if (/\/login/.test(p.url())) { c.status = 'BLOQUEADO'; r.interrompido = 'SESSÃO DERRUBADA — o mesmo usuário fez login em outro lugar (validador ou outro navegador). Não usar o validador com o mesmo usuário enquanto a suíte roda; rodar de novo a partir deste caso (--de ' + c.id + ').'; c.erro = r.interrompido; }
       if (e instanceof contexto.FalhaConferencia) c.status = 'FALHOU';
       else if (e instanceof contexto.AtTravado || /PROBLEMA NO AT|BLOQUEADO|ALERTA/.test(e.message)) { c.status = 'BLOQUEADO'; r.interrompido = e.message; }
       else c.status = 'ERRO';

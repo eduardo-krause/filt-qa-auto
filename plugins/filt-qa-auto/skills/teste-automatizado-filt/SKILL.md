@@ -81,6 +81,11 @@ Para o relatório (PDF do validador): `resultados/casos-para-dados-json.json` te
 ### D) Índice por tela
 `node motor/indice.js` — regrava `indice-testes-automatizados.md` com todas as suítes da máquina. Rodar depois de criar uma suíte ou de uma execução.
 
+## Convivência com o validador
+- Portas, navegador, perfil e sessão são separados; as duas skills só **leem** o `config.json` e o banco. Podem estar instaladas e abertas juntas.
+- **Único conflito:** o mesmo usuário logado nas duas ao mesmo tempo derruba a sessão da outra (o sistema aceita um login por usuário). Enquanto a suíte roda, não fazer login pelo validador com o mesmo usuário (nem pelo navegador da pessoa com o mesmo CPF). Se acontecer, o motor para com "SESSÃO DERRUBADA" e diz de qual caso continuar (`--de <caso>`).
+- As duas escrevem em `~/.claude/filt-qa/fluxos-novos.md` só acrescentando linhas (nunca reescrevem).
+
 ## Regras invioláveis (as mesmas do validador)
 1. **Só o AT da própria tarefa** — o login recusa URL de outra demanda ou de produção.
 2. **AT com problema → parar e avisar** — o motor faz isso sozinho (⛔ BLOQUEADO) quando uma chamada fica sem resposta por mais de 60 s.
