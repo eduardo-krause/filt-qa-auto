@@ -31,9 +31,19 @@ Esta skill **não tem regras próprias do sistema**: usa as que a equipe já man
 1. `~/.claude/filt-qa/config.json` precisa existir (é criado pelo validador). Se não existir, mandar a pessoa rodar `/validar-tarefa-filt` uma vez.
 2. Na pasta `motor/`: se não houver `node_modules`, rodar `npm install` (instala só o `mysql2`; o Playwright é o do validador).
 
+## Passo 0 — Antes de começar, SEMPRE pedir à pessoa
+Logo ao iniciar a skill, mesmo que o comando venha com argumento, pedir **numa pergunta só** e **não começar sem as quatro**:
+1. **A tarefa no Jira** (link ou chave `NMTZ-XXXX`).
+2. **A URL do AT** da tarefa (ex.: `https://erp-homologacao-nmtz-<N>.viasoftcloud.com.br`). Não deduzir pelo número da tarefa.
+3. **A base** (empresa do login) nesse AT. Não deduzir; usar exatamente a informada.
+4. **O que fazer**: montar a suíte da tarefa (A), rodar uma suíte que já existe — toda ou só alguns casos (B), ou só ver o índice (D).
+
+Se a URL citar outra demanda (número `nmtz-` diferente da tarefa), não usar: avisar e pedir a URL certa.
+Se a suíte da tarefa já existe, conferir que `at.url` e `at.base` dela batem com o que a pessoa informou agora (o AT pode ter sido recriado); se não baterem, atualizar a suíte com o que a pessoa disse antes de rodar.
+
 ## Fluxo
 ### A) Montar a suíte de uma tarefa (depois da validação manual)
-1. Pedir à pessoa (uma pergunta só): **tarefa**, **URL do AT** e **base** — mesmas regras do validador (nunca deduzir; AT de outra demanda = parar).
+1. Usar a tarefa, a URL e a base do Passo 0 (mesmas regras do validador: nunca deduzir; AT de outra demanda = parar).
 2. Reaproveitar o que a validação manual já deixou em `~/.claude/historico-validacoes/<NMTZ>/`: `dados.json` (casos, esperado, origem), `progresso-*.md` (ordem e dados que funcionaram), scripts da tarefa (fluxos que funcionaram) e o banco do AT (naturezas, formas, clientes, itens usados). **Não redescobrir o fluxo pela tela.**
 3. Escrever `automacao/suite.js` a partir de `modelos/suite-modelo.js`: **um caso para cada caso da tarefa e cada reprovação**, com `origem`, `telas` (nome do item no menu), `esperado` em texto e as conferências com o valor exato. Nenhum caso da tarefa fica de fora; o que não dá para automatizar vai como caso com `manual: 'motivo'` (aparece como PULADO com o motivo).
 4. Ação que ainda não existe em `passos/` → criar no arquivo da tela (genérico, sem dado de tarefa). Ação que só serve à tarefa → `automacao/passos/<área>/<arquivo>.js` da suíte.
