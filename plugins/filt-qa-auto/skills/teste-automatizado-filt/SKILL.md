@@ -22,7 +22,7 @@ Guia para escrever suíte e passo: `referencias/escrever-suite.md` (ler ao monta
 
 ## Conhecimento do sistema e critérios — vêm do plugin `filt-qa` (não copiar para cá)
 Esta skill **não tem regras próprias do sistema**: usa as que a equipe já mantém no plugin `filt-qa` (precisa estar instalado).
-- **Como o sistema funciona** (fluxos de tela, rotas, componentes, onde cada dado fica no banco, regras de negócio confirmadas): skill **`regras-sistema-filt`**. Ler as referências da rotina **antes** de montar a suíte e antes de escrever ou consertar um passo; o `esperado` dos casos e as consultas de conferência partem dali.
+- **Como o sistema funciona** (fluxos de tela, rotas, componentes, onde cada dado fica no banco, regras de negócio confirmadas): skill **`regras-sistema-filt`** — carregada no Passo 1; reler a referência da rotina antes de escrever ou consertar um passo.
 - **O que é e o que não é bug** e as regras invioláveis: seções "Regras invioláveis" e "Critérios de julgamento" do `SKILL.md` da skill **`validar-tarefa-filt`**. Valem para analisar todo caso que não der OK (ex.: estado intermediário não é bug; conferir nova aba antes de reprovar; permissão se valida pela tela).
 - **Fluxo novo descoberto** ao montar ou consertar um passo (botão, painel, máscara, rota, tabela): anotar em `~/.claude/filt-qa/fluxos-novos.md` com a data e o tipo, como manda o validador — `[fato]` sozinho; `[regra]` (regra de negócio) **só depois de perguntar à pessoa**; `[critério]` quando a pessoa decide o que é ou não bug. Dali vai para a equipe pelo `/compartilhar-regras`. Nunca escrever regra de sistema nesta skill.
 - Os passos (`passos/`) guardam só **como operar** a tela; o **porquê** (regra) fica nas referências do `filt-qa`.
@@ -39,6 +39,14 @@ Logo ao iniciar a skill, mesmo que o comando venha com argumento, pedir **numa p
 4. **O que fazer**: montar a suíte da tarefa (A), rodar uma suíte que já existe — toda ou só alguns casos (B), ou só ver o índice (D).
 
 Se a URL citar outra demanda (número `nmtz-` diferente da tarefa), não usar: avisar e pedir a URL certa.
+
+## Passo 1 — Carregar as regras logo depois do Passo 0 (sempre, antes de montar ou rodar)
+1. **Regras de negócio e fluxos do sistema:** invocar a skill **`filt-qa:regras-sistema-filt`** (ferramenta Skill) e ler as referências das rotinas que a tarefa toca (pedido, nota, financeiro, estoque...). É de lá que saem o `esperado` dos casos, as consultas de conferência e como cada tela se comporta.
+2. **Regras ainda não publicadas:** ler `~/.claude/filt-qa/fluxos-novos.md` — regras e fluxos confirmados que ainda não foram para o plugin (`[regra]` vale como regra de negócio confirmada; `[critério]` vale como critério de julgamento).
+3. **Critérios de julgamento e regras invioláveis:** seções "Regras invioláveis" e "Critérios de julgamento" do `SKILL.md` da skill `validar-tarefa-filt` (no plugin `filt-qa` instalado).
+4. **O que já se sabe da tarefa:** `~/.claude/historico-validacoes/<NMTZ>/` — `dados.json` (casos, esperado, reprovações, pontos para a PO), `progresso-*.md` e a suíte, se já existir.
+
+Regra de negócio que **não** estiver em nenhuma dessas fontes não é deduzida do comportamento da tela: parar e perguntar à pessoa (regra 10 do validador) antes de escrever o `esperado`.
 Se a suíte da tarefa já existe, conferir que `at.url` e `at.base` dela batem com o que a pessoa informou agora (o AT pode ter sido recriado); se não baterem, atualizar a suíte com o que a pessoa disse antes de rodar.
 
 ## Fluxo
