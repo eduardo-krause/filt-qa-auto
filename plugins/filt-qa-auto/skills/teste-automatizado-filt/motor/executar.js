@@ -114,8 +114,8 @@ const linhaCaso = (c) => `${resultado.ICONE[c.status] || ''} ${c.status.padEnd(9
       else c.status = 'ERRO';
     }
     clearTimeout(relogio);
-    // conferência registrada com { continuar: true } que deu errado também reprova o caso
-    if (c.status === 'OK' && t.registro.conferencias.some((x) => !x.ok)) { c.status = 'FALHOU'; c.erro = 'conferência(s) com valor diferente: ' + t.registro.conferencias.filter((x) => !x.ok).map((x) => x.descricao).join('; '); }
+    // sem conferência → ERRO; conferência com { continuar: true } que deu errado → FALHOU
+    contexto.statusFinal(c, t.registro.conferencias);
     Object.assign(c, { passos: t.registro.passos, conferencias: t.registro.conferencias, guardados: t.registro.guardados, notas: t.registro.notas, ms: Date.now() - ini });
     resultados.set(c.id, c);
     console.log(linhaCaso(c) + (c.status !== 'OK' ? `\n      ↳ ${c.erro}${c.parouEm ? `  [passo: ${c.parouEm}]` : ''}` : ''));

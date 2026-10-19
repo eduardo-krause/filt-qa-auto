@@ -91,4 +91,13 @@ function criar({ p, suite, caso, guardadosDe, pastasPassos }) {
   return t;
 }
 
-module.exports = { criar, iguais, FalhaConferencia, AtTravado: rede.AtTravado };
+// Status final de um caso que terminou sem exceção: OK só com pelo menos uma conferência registrada e todas certas.
+// Sem conferência = ERRO da automação (o caso não comprovou nada); conferência {continuar:true} errada = FALHOU.
+function statusFinal(c, conferencias) {
+  if (c.status !== 'OK') return;
+  if (!conferencias.length) { c.status = 'ERRO'; c.erro = 'nenhuma conferência registrada — o caso terminou sem comprovar o esperado (falta t.confere na suíte)'; return; }
+  const erradas = conferencias.filter((x) => !x.ok);
+  if (erradas.length) { c.status = 'FALHOU'; c.erro = 'conferência(s) com valor diferente: ' + erradas.map((x) => x.descricao).join('; '); }
+}
+
+module.exports = { criar, iguais, statusFinal, FalhaConferencia, AtTravado: rede.AtTravado };

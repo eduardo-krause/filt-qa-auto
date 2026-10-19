@@ -45,6 +45,18 @@ Além dos casos da tarefa, toda suíte leva uma seção **"ADICIONADO — limite
 
 Para cada um, conferir no banco que a validação barra **antes de gravar**: ação que grava na hora (ex.: Remover item na edição) e só é barrada no Concluir deixa o registro inconsistente — isso é bug.
 
+### Todo caso precisa de conferência
+O motor só dá **OK** se o caso registrou **pelo menos uma** conferência (`t.confere` / `t.confereBanco`, na suíte ou dentro de um passo) e todas bateram. Caso que termina sem nenhuma vira **ERRO** ("nenhuma conferência registrada"): só navegar sem erro não comprova o esperado.
+
+Bloqueio esperado (o sistema tem que barrar) se comprova pela **mensagem** e pelo **banco**, nunca só por "deu erro": um erro qualquer (timeout, campo não achado) não prova que a regra funcionou.
+```js
+let msg = '';
+try { await t.passos.vendas.pedido.concluir({ pedido }); } catch (e) { msg = e.message; }
+msg += ' ' + (await t.tela.toasts(t.p)).join(' ');
+t.confere('mensagem de bloqueio', msg, /quantidade.*menor.*antecipad/i);
+await t.confereBanco('pedido não gravou', 'SELECT QTDE FROM ... WHERE ID = ?', [pedido], { QTDE: qtdeAntes });
+```
+
 ### Boas práticas
 - **Cada caso cria o próprio dado** (pedido, nota, adiantamento). Só use `depende` quando o caso da tarefa é uma continuação (ex.: "editar o pedido do caso 1").
 - **Conferir no banco a cada etapa** que o caso descreve (ex.: "A pagar com 1/2 quitada" e "Pago com 2/2"), não só no fim.

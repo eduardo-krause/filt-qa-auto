@@ -7,7 +7,7 @@
       "name": "filt-qa-auto",
       "source": "./plugins/filt-qa-auto",
       "description": "Validação de tarefas NMTZ com testes automatizados (skill teste-automatizado-filt), com passos reaproveitáveis por tela",
-      "version": "0.2.0"
+      "version": "0.2.1"
     }
   ]
 }
