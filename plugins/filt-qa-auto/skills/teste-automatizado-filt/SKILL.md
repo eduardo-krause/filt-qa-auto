@@ -36,7 +36,10 @@ Logo ao iniciar a skill, mesmo que o comando venha com argumento, pedir **numa p
 1. **A tarefa no Jira** (link ou chave `NMTZ-XXXX`).
 2. **A URL do AT** da tarefa (ex.: `https://erp-homologacao-nmtz-<N>.viasoftcloud.com.br`). Não deduzir pelo número da tarefa.
 3. **A base** (empresa do login) nesse AT. Não deduzir; usar exatamente a informada.
-4. **O que fazer**: montar a suíte da tarefa (A), rodar uma suíte que já existe — toda ou só alguns casos (B), ou só ver o índice (D).
+4. **O que fazer** (perguntar com estas palavras, sem letras):
+   - **Montar a suíte** — a tarefa já foi validada à mão; transformar os casos dela em suíte automatizada (fluxo "Montar" abaixo).
+   - **Rodar a suíte** — a suíte já existe; retestar tudo ou só alguns casos (dizer quais). Depois de rodar, sempre analisar o resultado.
+   - **Ver o índice** — só listar os casos automatizados de todas as tarefas, por tela.
 
 Se a URL citar outra demanda (número `nmtz-` diferente da tarefa), não usar: avisar e pedir a URL certa.
 
@@ -50,14 +53,14 @@ Regra de negócio que **não** estiver em nenhuma dessas fontes não é deduzida
 Se a suíte da tarefa já existe, conferir que `at.url` e `at.base` dela batem com o que a pessoa informou agora (o AT pode ter sido recriado); se não baterem, atualizar a suíte com o que a pessoa disse antes de rodar.
 
 ## Fluxo
-### A) Montar a suíte de uma tarefa (depois da validação manual)
+### Montar a suíte de uma tarefa (depois da validação manual)
 1. Usar a tarefa, a URL e a base do Passo 0 (mesmas regras do validador: nunca deduzir; AT de outra demanda = parar).
 2. Reaproveitar o que a validação manual já deixou em `~/.claude/historico-validacoes/<NMTZ>/`: `dados.json` (casos, esperado, origem), `progresso-*.md` (ordem e dados que funcionaram), scripts da tarefa (fluxos que funcionaram) e o banco do AT (naturezas, formas, clientes, itens usados). **Não redescobrir o fluxo pela tela.**
 3. Escrever `automacao/suite.js` a partir de `modelos/suite-modelo.js`: **um caso para cada caso da tarefa e cada reprovação**, com `origem`, `telas` (nome do item no menu), `esperado` em texto e as conferências com o valor exato. Nenhum caso da tarefa fica de fora; o que não dá para automatizar vai como caso com `manual: 'motivo'` (aparece como PULADO com o motivo).
 4. Ação que ainda não existe em `passos/` → criar no arquivo da tela (genérico, sem dado de tarefa). Ação que só serve à tarefa → `automacao/passos/<área>/<arquivo>.js` da suíte.
 5. `node motor/executar.js <suite.js> --listar` e mostrar a lista à pessoa.
 
-### B) Rodar
+### Rodar a suíte
 ```bash
 node motor/executar.js <suite.js>                 # tudo
 node motor/executar.js <suite.js> --casos R01     # só esse (e o que ele precisa)
@@ -66,7 +69,7 @@ node motor/executar.js <suite.js> --de 7 --parar  # a partir do 7, parando no 1�
 - Demora (cria pedidos, emite notas): rodar em segundo plano (`run_in_background`) e esperar o aviso — **não ficar consultando**.
 - O terminal mostra uma linha por caso; o detalhe está em `resultados/ultimo.md`. Ler só o trecho dos casos que não deram OK.
 
-### C) Analisar o resultado (o julgamento é sempre meu)
+### Analisar o resultado (sempre depois de rodar — o julgamento é sempre meu)
 | Status | Quer dizer | O que fazer |
 |---|---|---|
 | ✅ OK | todas as conferências bateram | nada |
@@ -78,7 +81,7 @@ node motor/executar.js <suite.js> --de 7 --parar  # a partir do 7, parando no 1�
 **Nunca** marcar um caso como OK no relatório só porque o motor deu OK se a pessoa pediu conferência de tela/layout — isso continua manual.
 Para o relatório (PDF do validador): `resultados/casos-para-dados-json.json` tem os casos no formato do `dados.json`; juntar com bugs, pontos para a PO e comparação com produção, que continuam sendo feitos à mão.
 
-### D) Índice por tela
+### Ver o índice por tela
 `node motor/indice.js` — regrava `indice-testes-automatizados.md` com todas as suítes da máquina. Rodar depois de criar uma suíte ou de uma execução.
 
 ## Convivência com o validador
