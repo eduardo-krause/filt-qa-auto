@@ -1,6 +1,6 @@
 # filt-qa-auto — testes automatizados do ERP Filt
 
-Plugin do Claude Code com a skill **`/teste-automatizado-filt`**: transforma os casos de teste de uma tarefa NMTZ (depois de validada à mão com o `/validar-tarefa-filt`) em uma **suíte que roda sozinha** no AT da tarefa — faz tudo pela tela e confere cada resultado no banco.
+Plugin do Claude Code com a skill **`/teste-automatizado-filt`**: **valida uma tarefa NMTZ de ponta a ponta** — lê a tarefa, monta o plano (com casos de limite e negativos), executa os testes por uma **suíte que roda sozinha** no AT da tarefa (tudo pela tela, conferindo cada resultado no banco), analisa e gera o PDF com parecer. A suíte fica salva para os retestes.
 
 **Para que serve:** retestar depois de um deploy ou de uma correção sem refazer tudo à mão. A suíte roda todos os casos e entrega a lista de quem passou e quem não passou; o julgamento (é bug? mudou a tela?) continua sendo de quem valida.
 

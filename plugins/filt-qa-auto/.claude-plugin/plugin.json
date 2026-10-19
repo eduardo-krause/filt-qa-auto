@@ -1,6 +1,6 @@
 {
   "name": "filt-qa-auto",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Testes automatizados do ERP Filt/Nimitz: suíte por tarefa, passos por tela, conferência no banco",
   "author": { "name": "Equipe de QA do Filt" }
 }
