@@ -13,8 +13,10 @@ Usa o mesmo `~/.claude/filt-qa/config.json` do validador (só lê), mas tem sess
 | Peça | Onde fica | O que é |
 |---|---|---|
 | **Motor** | `motor/` (nesta skill) | roda a suíte: login no AT, conferência do DF-e, executa os casos, grava o resultado |
-| **Passos** | `passos/<área>/<tela>.js` (nesta skill) | ações prontas, uma pasta por área e um arquivo por tela (`vendas/pedido.js`, `financeiro/baixa.js`...). Mudou a tela num deploy → conserta aqui e vale para todas as suítes |
+| **App mobile** | `passos/mobile/app-*.js` + `passos/_adb.js` | app Android (emulador/celular) comandado por adb: login, atualizar dados, novo pedido, item defensivo, enviar. Usuário do app diferente do usuário do motor (um login por usuário) |
+| **Passos** | `passos/<área>/<tela-fluxo>.js` (nesta skill) | ações prontas, uma pasta por área e **um arquivo por tela/fluxo específico**, com nome que diz o que faz: `fiscal/nota-entrada-compra.js`, `fiscal/nota-venda.js`, `vendas/pedido-criar.js`, `vendas/pedido-ordem-entrega.js`, `mobile/app-item-defensivo.js`. Nada de arquivo genérico com tudo dentro (`nota.js` e `pedido.js` ficaram só como atalho para suítes antigas). Na suíte: `t.passos.fiscal.notaEntradaCompra.entradaTerceiros(...)` (o nome com hífen também responde em camelCase). Arquivos de apoio (`_comum.js`, `_nota.js`, `_pedido.js`, `_adb.js`) ficam na raiz de `passos/` e não viram passo. Mudou a tela num deploy → conserta aqui e vale para todas as suítes |
 | **Suíte** | `~/.claude/historico-validacoes/<NMTZ>/automacao/suite.js` | os casos de UMA tarefa: dados, passos e resultado esperado. Fica fora do plugin porque tem base/cliente da pessoa |
+| **Nome dos casos** | na suíte | `id` em kebab-case com tela + ação + dado (`caso-04-calculo-simples-qtd-10-20`, `faturar-pedido-app-407-receituario`), título em frase completa. Nada de sigla (`ESTQ`, `P407`) |
 | **Resultado** | `.../<NMTZ>/automacao/resultados/` | `ultimo.md` (legível), `.json` completo e `casos-para-dados-json.json` (formato do relatório) |
 | **Índice por tela** | `~/.claude/historico-validacoes/indice-testes-automatizados.md` | todos os casos automatizados de todas as tarefas, agrupados pela tela que usam |
 

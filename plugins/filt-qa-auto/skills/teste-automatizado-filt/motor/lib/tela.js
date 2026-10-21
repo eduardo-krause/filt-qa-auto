@@ -18,6 +18,15 @@ async function abrir(p, rota) {
   await pronto(p, 800);
 }
 
+// Loader de página do Filt (vs-loader, logo "filt" por cima da tela) que às vezes não some: espera até `ms`.
+// → true se sumiu; false se continuou travado (quem chama decide recarregar e DEVE anotar — contorno é possível bug).
+async function semLoader(p, ms = 20000) {
+  const l = p.locator('vs-loader .filtz-loader-container:visible');
+  const t0 = Date.now();
+  while (Date.now() - t0 < ms) { if (!(await l.count())) return true; await esperar(p, 500); }
+  return false;
+}
+
 // Diálogo PrimeNG visível mais recente (ou null).
 async function dialogo(p) { const d = p.locator('.p-dialog:visible, [role=alertdialog]:visible').last(); return (await d.count()) ? d : null; }
 async function textoDialogos(p) { return (await p.locator('.p-dialog:visible, [role=alertdialog]:visible').allInnerTexts()).map((s) => limpo(s).slice(0, 500)); }
@@ -167,5 +176,5 @@ async function evidencia(p, desde) {
 
 module.exports = {
   esperar, limpo, pronto, abrir, dialogo, textoDialogos, toasts, fecharToasts, botao, temBotao, confirmar, clicarTexto,
-  campo, digitar, qtd, moeda, data, autocomplete, autocompleteRotulo, dropdown, menuKebab, menuLateral, salvar, exigirDfe, evidencia,
+  campo, digitar, qtd, moeda, data, semLoader, autocomplete, autocompleteRotulo, dropdown, menuKebab, menuLateral, salvar, exigirDfe, evidencia,
 };

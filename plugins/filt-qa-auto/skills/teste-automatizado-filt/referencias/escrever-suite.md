@@ -57,6 +57,13 @@ t.confere('mensagem de bloqueio', msg, /quantidade.*menor.*antecipad/i);
 await t.confereBanco('pedido não gravou', 'SELECT QTDE FROM ... WHERE ID = ?', [pedido], { QTDE: qtdeAntes });
 ```
 
+### Contorno é bug, não detalhe do passo
+Se o passo só consegue agir contornando a tela — clique que não troca o valor e precisou do teclado, `force: true`, várias tentativas, valor setado por JS, botão fora da tela — o cliente provavelmente vai sofrer o mesmo. O contorno pode ficar para o teste seguir, mas **sempre**:
+- o passo registra como agiu (ex.: `dropdown.ultimo.via` = `mouse`/`teclado`) e faz `t.anotar('ATENÇÃO: ...')` quando contornou;
+- o caso que usa o campo confere a via esperada (ex.: `t.confere('troca pelo clique', via, 'mouse')`);
+- toda nota ATENÇÃO é investigada e vira **problema no relatório** (da tarefa ou fora), com a causa no código quando achar.
+Nunca contornar em silêncio.
+
 ### Boas práticas
 - **Cada caso cria o próprio dado** (pedido, nota, adiantamento). Só use `depende` quando o caso da tarefa é uma continuação (ex.: "editar o pedido do caso 1").
 - **Conferir no banco a cada etapa** que o caso descreve (ex.: "A pagar com 1/2 quitada" e "Pago com 2/2"), não só no fim.

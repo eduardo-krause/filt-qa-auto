@@ -18,7 +18,8 @@ function iguais(esperado, obtido) {
 const mostrar = (v) => (v instanceof RegExp ? String(v) : typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v));
 const resumo = (a) => { if (a === undefined) return ''; const s = JSON.stringify(a); return s.length > 140 ? s.slice(0, 137) + '...' : s; };
 
-// carrega passos/<area>/<arquivo>.js → t.passos.<area>.<arquivo>.<funcao>(args), registrando cada chamada como passo
+// carrega passos/<area>/<arquivo>.js → t.passos.<area>.<arquivo>.<funcao>(args), registrando cada chamada como passo.
+// Arquivos de apoio (_comum.js, _nota.js, _adb.js...) ficam na raiz de passos/ e não viram passo.
 function carregarPassos(t, pastas) {
   const arvore = {};
   for (const raiz of pastas) {
@@ -31,6 +32,9 @@ function carregarPassos(t, pastas) {
         const mod = require(path.join(dir, arq));
         arvore[area] = arvore[area] || {};
         arvore[area][nome] = arvore[area][nome] || {};
+        // arquivo por tela com hífen (pedido-item-defensivo.js) também responde em camelCase: t.passos.vendas.pedidoItemDefensivo
+        const camel = nome.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
+        if (camel !== nome) arvore[area][camel] = arvore[area][nome];
         for (const [fn, f] of Object.entries(mod)) {
           if (typeof f !== 'function') continue;
           arvore[area][nome][fn] = (args) => t.passo(`${area}.${nome}.${fn} ${resumo(args)}`, () => f(t, args || {}));
