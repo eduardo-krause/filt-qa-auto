@@ -13,8 +13,8 @@ Usa o mesmo `~/.claude/filt-qa/config.json` do validador (só lê), mas tem sess
 | Peça | Onde fica | O que é |
 |---|---|---|
 | **Motor** | `motor/` (nesta skill) | roda a suíte: login no AT, conferência do DF-e, executa os casos, grava o resultado |
-| **App mobile** | `passos/mobile/app-*.js` + `passos/_adb.js` | app Android (emulador/celular) comandado por adb: login, atualizar dados, novo pedido, item defensivo, enviar. Usuário do app diferente do usuário do motor (um login por usuário) |
-| **Passos** | `passos/<área>/<tela-fluxo>.js` (nesta skill) | ações prontas, uma pasta por área e **um arquivo por tela/fluxo específico**, com nome que diz o que faz: `fiscal/nota-entrada-compra.js`, `fiscal/nota-venda.js`, `vendas/pedido-criar.js`, `vendas/pedido-ordem-entrega.js`, `mobile/app-item-defensivo.js`. Nada de arquivo genérico com tudo dentro (`nota.js` e `pedido.js` ficaram só como atalho para suítes antigas). Na suíte: `t.passos.fiscal.notaEntradaCompra.entradaTerceiros(...)` (o nome com hífen também responde em camelCase). Arquivos de apoio (`_comum.js`, `_nota.js`, `_pedido.js`, `_adb.js`) ficam na raiz de `passos/` e não viram passo. Mudou a tela num deploy → conserta aqui e vale para todas as suítes |
+| **App mobile** | `passos/mobile/app-pedido-venda/*.js` + `passos/_adb.js` | app Android (emulador/celular) comandado por adb: login, atualizar dados, novo pedido, item defensivo, enviar. Usuário do app diferente do usuário do motor (um login por usuário) |
+| **Passos** | `passos/<área>/<tela>/<cenário>.js` (nesta skill) | **uma pasta por tela** (item do menu) e **um arquivo por cenário**, com o nome da ação: `vendas/pedido-venda/criar-pedido.js`, `fiscal/nota-fiscal/excluir-nota.js`, `mobile/app-pedido-venda/trocar-receituario-padrao.js`. Na suíte: `t.passos.vendas.pedidoVenda.criar(...)`. Ajudantes em `<tela>/_apoio.js` e `passos/_*.js` (não viram passo); nomes antigos por `passos/_atalhos.js`. Regras completas em `referencias/escrever-suite.md`. Mudou a tela num deploy → conserta aqui e vale para todas as suítes |
 | **Suíte** | `~/.claude/historico-validacoes/<NMTZ>/automacao/suite.js` | os casos de UMA tarefa: dados, passos e resultado esperado. Fica fora do plugin porque tem base/cliente da pessoa |
 | **Nome dos casos** | na suíte | `id` em kebab-case com tela + ação + dado (`caso-04-calculo-simples-qtd-10-20`, `faturar-pedido-app-407-receituario`), título em frase completa. Nada de sigla (`ESTQ`, `P407`) |
 | **Resultado** | `.../<NMTZ>/automacao/resultados/` | `ultimo.md` (legível), `.json` completo e `casos-para-dados-json.json` (formato do relatório) |
@@ -63,7 +63,7 @@ Igual ao Passo 1 do validador: `getJiraIssue` (cloudId `nimitz.atlassian.net`, f
 ## Passo 4 — Montar ou atualizar a suíte da tarefa
 - **Suíte já existe** (reteste): reaproveitar; conferir `at.url`/`at.base` com o Passo 0 e atualizar se o AT mudou; acrescentar os casos novos (reprovações novas, limites que faltavam).
 - **Suíte nova:** `automacao/suite.js` a partir de `modelos/suite-modelo.js` — **um caso para cada item do plano**, com `origem`, `telas` (nome do item no menu), `esperado` e conferências no banco. Função `preparar(t)` para pré-condições (estoque, cadastros).
-- **Reaproveitar** os passos de `passos/`. Ação que não existe → criar no arquivo da tela (genérico). **Passo novo roda primeiro sozinho** (`--casos X`) e só entra na rodada completa depois de funcionar.
+- **Reaproveitar** os passos de `passos/` (procurar pela pasta da tela e pelo nome da ação). Ação que não existe → **arquivo novo** `passos/<área>/<tela>/<verbo-objeto>.js` (genérico), um cenário por arquivo; tela nova → pasta nova. Nunca juntar várias ações num arquivo genérico. **Passo novo roda primeiro sozinho** (`--casos X`) e só entra na rodada completa depois de funcionar.
 - Antes de cadastrar dado, procurar na base o que serve (regra 8 do validador); conferir rotas e ids de campo no código-fonte (disco Z:).
 
 ## Passo 5 — Rodar

@@ -18,27 +18,45 @@ function iguais(esperado, obtido) {
 const mostrar = (v) => (v instanceof RegExp ? String(v) : typeof v === 'object' && v !== null ? JSON.stringify(v) : String(v));
 const resumo = (a) => { if (a === undefined) return ''; const s = JSON.stringify(a); return s.length > 140 ? s.slice(0, 137) + '...' : s; };
 
-// carrega passos/<area>/<arquivo>.js → t.passos.<area>.<arquivo>.<funcao>(args), registrando cada chamada como passo.
-// Arquivos de apoio (_comum.js, _nota.js, _adb.js...) ficam na raiz de passos/ e não viram passo.
+// Carrega passos/<área>/<tela>/<cenário>.js → t.passos.<área>.<tela>.<função>(args), registrando cada chamada como passo.
+// Uma pasta por tela; um arquivo por cenário, com o nome da ação (criar-pedido.js, excluir-nota.js...). As funções de todos os
+// cenários da tela respondem juntas no objeto da tela. Nome com hífen também responde em camelCase (pedido-venda → pedidoVenda).
+// Arquivos que começam com "_" (passos/_comum.js, <tela>/_apoio.js...) são de apoio e não viram passo.
+// passos/_atalhos.js mantém os nomes antigos (t.passos.vendas.pedido.criar...) apontando para a tela nova.
 function carregarPassos(t, pastas) {
   const arvore = {};
+  const camel = (n) => n.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
+  const registrar = (area, tela, cenario, mod) => {
+    arvore[area] = arvore[area] || {};
+    const alvo = (arvore[area][tela] = arvore[area][tela] || {});
+    if (camel(tela) !== tela) arvore[area][camel(tela)] = alvo;
+    for (const [fn, f] of Object.entries(mod)) {
+      if (typeof f !== 'function') continue;
+      if (alvo[fn]) throw new Error(`passos: a função ${fn} aparece em dois cenários da tela ${area}/${tela} (${cenario})`);
+      alvo[fn] = (args) => t.passo(`${area}.${tela}.${fn} ${resumo(args)}`, () => f(t, args || {}));
+    }
+  };
+  const ehJs = (f) => f.endsWith('.js') && !f.startsWith('_');
   for (const raiz of pastas) {
     if (!fs.existsSync(raiz)) continue;
     for (const area of fs.readdirSync(raiz)) {
-      const dir = path.join(raiz, area);
-      if (!fs.statSync(dir).isDirectory()) continue;
-      for (const arq of fs.readdirSync(dir).filter((f) => f.endsWith('.js'))) {
-        const nome = arq.replace(/\.js$/, '');
-        const mod = require(path.join(dir, arq));
-        arvore[area] = arvore[area] || {};
-        arvore[area][nome] = arvore[area][nome] || {};
-        // arquivo por tela com hífen (pedido-item-defensivo.js) também responde em camelCase: t.passos.vendas.pedidoItemDefensivo
-        const camel = nome.replace(/-([a-z0-9])/g, (_, c) => c.toUpperCase());
-        if (camel !== nome) arvore[area][camel] = arvore[area][nome];
-        for (const [fn, f] of Object.entries(mod)) {
-          if (typeof f !== 'function') continue;
-          arvore[area][nome][fn] = (args) => t.passo(`${area}.${nome}.${fn} ${resumo(args)}`, () => f(t, args || {}));
-        }
+      const dirArea = path.join(raiz, area);
+      if (area.startsWith('_') || !fs.statSync(dirArea).isDirectory()) continue;
+      for (const item of fs.readdirSync(dirArea)) {
+        const p2 = path.join(dirArea, item);
+        if (fs.statSync(p2).isDirectory()) {
+          for (const arq of fs.readdirSync(p2).filter(ehJs)) registrar(area, item, arq, require(path.join(p2, arq)));
+        } else if (ehJs(item)) registrar(area, item.replace(/\.js$/, ''), item, require(p2));   // formato antigo (arquivo direto na área)
+      }
+    }
+    const arqAtalhos = path.join(raiz, '_atalhos.js');
+    if (fs.existsSync(arqAtalhos)) {
+      for (const [antigo, novos] of Object.entries(require(arqAtalhos))) {
+        const [a, n] = antigo.split('.');
+        if (arvore[a] && arvore[a][n]) continue;
+        const junto = {};
+        for (const destino of novos) { const [a2, t2] = destino.split('.'); Object.assign(junto, (arvore[a2] || {})[t2] || {}); }
+        if (Object.keys(junto).length) { arvore[a] = arvore[a] || {}; arvore[a][n] = junto; if (camel(n) !== n && !arvore[a][camel(n)]) arvore[a][camel(n)] = junto; }
       }
     }
   }

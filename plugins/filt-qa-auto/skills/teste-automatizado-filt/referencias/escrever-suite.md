@@ -26,7 +26,7 @@ module.exports = {
 ### O que o caso recebe (`t`)
 | Uso | Para quê |
 |---|---|
-| `await t.passos.vendas.pedido.criar({...})` | ações prontas (`passos/<área>/<tela>.js`). Cada chamada vira um passo no resultado |
+| `await t.passos.vendas.pedidoVenda.criar({...})` | ações prontas (`passos/<área>/<tela>/<cenário>.js`; todas as funções da tela respondem no objeto da tela). Cada chamada vira um passo no resultado |
 | `t.confere('descrição', obtido, esperado)` | conferência. Diferente → caso FALHOU e para. `{ continuar: true }` registra e segue |
 | `await t.confereBanco('descr.', sql, [params], { COLUNA: valor })` | confere a 1ª linha da consulta |
 | `await t.banco.linha(sql, params)` / `consultar` / `valor` | leitura no banco do AT (só leitura) |
@@ -72,11 +72,33 @@ Nunca contornar em silêncio.
 - Nada de esperas fixas: os passos usam `t.tela.pronto()` (espera as chamadas de API terminarem).
 - Caso que não dá para automatizar (layout, impressão física, conferência visual): deixe na suíte com `manual: 'motivo'` e sem `executar` — ele aparece no resultado como PULADO com o motivo, para não sumir da lista.
 
-## Passo (`passos/<área>/<tela>.js`)
-Um arquivo por **tela** (item de menu), com comentário no topo dizendo a tela e a rota. Cada função recebe `(t, args)`:
+## Passo (`passos/<área>/<tela>/<cenário>.js`)
+**Uma pasta por tela** (o item do menu) e **um arquivo por cenário**, com o nome da AÇÃO sobre a coisa da tela — `criar-pedido.js`, `excluir-nota.js`, `trocar-receituario-padrao.js`, `gerar-ordem-de-entrega-linha-a-linha.js`. O nome tem que dizer sozinho o que o cenário faz: quem for criar um cenário novo acha pelo nome onde ele entra (ou que ele ainda não existe).
+
+```
+passos/
+  vendas/                         ← área do menu (Processos › Vendas)
+    pedido-venda/                 ← tela (item do menu "Pedido Venda")
+      criar-pedido.js             ← cenário: uma ação
+      concluir-pedido.js
+      adicionar-item-defensivo.js
+      informar-aplicacoes-no-modal-defensivo.js
+      faturar-ordem-de-entrega.js
+      _apoio.js                   ← ajudantes usados por vários cenários da tela (não vira passo)
+```
+
+- **Na suíte:** `t.passos.<área>.<tela em camelCase>.<função>` — ex.: `t.passos.vendas.pedidoVenda.criar({...})`, `t.passos.fiscal.notaFiscal.entradaTerceiros({...})`, `t.passos.mobile.appPedidoVenda.adicionar({...})`. As funções de todos os cenários da tela respondem juntas; o motor recusa a mesma função em dois cenários da mesma tela.
+- **Nome do arquivo:** verbo + objeto, em português, com hífen: `criar-`, `excluir-`, `editar-`, `cancelar-`, `aprovar-`, `faturar-`, `emitir-`, `lancar-`, `consultar-` (só banco), `ler-` (só lê a tela), `conferir-`. Nada de `cadastro.js`, `acoes.js`, `util.js`.
+- **Um cenário = uma ação.** Se o arquivo começa a ter duas ações diferentes, separa em dois.
+- **Ajudante interno** (função que só os cenários usam) vai para `<tela>/_apoio.js`; utilitário de várias telas vai para a raiz de `passos/` com `_` na frente (`_comum.js`, `_nota.js`, `_pedido.js`, `_adb.js`). Arquivo com `_` nunca vira passo.
+- **Tela nova** = pasta nova com o nome do item do menu em kebab-case (`antecipacao-financeira-pedidos`, `configuracao-receituario`). App mobile: `mobile/<app-tela>/` (ex.: `mobile/app-pedido-venda/`).
+- **Nomes antigos** (`t.passos.vendas.pedido.criar`, `t.passos.fiscal.nota...`) continuam funcionando por `passos/_atalhos.js`; suíte nova não usa.
+- **Passo criado durante a validação de uma demanda** já nasce assim, no plugin (genérico) ou em `<NMTZ>/automacao/passos/<área>/<tela>/<cenário>.js` quando é só daquela tarefa.
+
+Cada função recebe `(t, args)`:
 
 ```js
-// Tela: Processos › Vendas › Pedido Venda (/vendas/pedido)
+// Tela: Processos › Vendas › Pedido Venda (/vendas/pedido)   ← arquivo: passos/vendas/pedido-venda/gerar-ordem-de-entrega.js
 module.exports = {
   // O que faz. args: { pedido, quantidades:[2], casas }  → devolve { ... }
   async ordemEntrega(t, { pedido, quantidades, casas = 0 }) {
