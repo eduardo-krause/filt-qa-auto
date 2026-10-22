@@ -10,7 +10,7 @@ const HOME_VALIDADOR = process.env.FILT_QA_HOME || path.join(os.homedir(), '.cla
 const HOME = process.env.FILT_QA_AUTO_HOME || path.join(os.homedir(), '.claude', 'filt-qa-auto');
 const CFG_FILE = path.join(HOME_VALIDADOR, 'config.json');
 if (!fs.existsSync(CFG_FILE)) {
-  throw new Error(`Falta ${CFG_FILE}. Ele é criado na primeira vez que se usa o validador (/validar-tarefa-filt) — prepare a máquina por lá antes.`);
+  throw new Error(`Falta ${CFG_FILE}. Ele é criado por ferramentas/configurar.py (ver referencias/primeira-vez.md) — prepare a máquina antes.`);
 }
 const cfg = JSON.parse(fs.readFileSync(CFG_FILE, 'utf8'));
 fs.mkdirSync(path.join(HOME, 'sessoes'), { recursive: true });

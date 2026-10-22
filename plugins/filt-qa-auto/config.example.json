@@ -1,0 +1,25 @@
+{
+  "erp": {
+    "urlPadrao": "https://erp-homologacao-nmtz-{numero}.viasoftcloud.com.br",
+    "usuarios": {
+      "principal": { "cpf": "<seu CPF, só números>", "senha": "<sua senha>", "uso": "padrão para todas as validações" },
+      "secundario": { "cpf": "<CPF do usuário secundário>", "senha": "<senha>", "uso": "tarefas de permissão (comparar com o principal)" }
+    }
+  },
+  "db": { "host": "<host do MySQL de homologação>", "port": 3306, "user": "<seu usuário do banco>", "password": "<sua senha do banco>" },
+  "playwright": {
+    "nodeModules": "<pasta node_modules onde o playwright está instalado>",
+    "chrome": "<caminho do chrome.exe do Playwright (ms-playwright/chromium-XXXX/chrome-win64/chrome.exe)>",
+    "cdpPort": 9333
+  },
+  "saidaRelatorios": "<pasta onde o PDF do relatório é salvo, ex.: C:/Users/<você>/Downloads>",
+  "pastaTrabalho": "~/.claude/historico-validacoes",
+  "figma": { "email": "<conta do Figma da equipe>", "senha": "<senha>", "uso": "somente leitura: protótipos e Design System" },
+  "producao": {
+    "url": "https://app.filterp.com.br",
+    "empresa": "<trecho do nome da SUA base de teste principal em produção>",
+    "basesTeste": ["<nome exato da sua base de teste 1>", "<nome exato da base de teste 2>"],
+    "uso": "só bases de teste; lançamentos pela tela; nunca escrita direta no banco; nunca base de cliente",
+    "db": { "host": "<host do banco de produção>", "port": 3306, "user": "<seu usuário>", "senha": "<sua senha>", "somenteLeitura": true, "banco": "CLIENTE_<id da sua base de teste>" }
+  }
+}
