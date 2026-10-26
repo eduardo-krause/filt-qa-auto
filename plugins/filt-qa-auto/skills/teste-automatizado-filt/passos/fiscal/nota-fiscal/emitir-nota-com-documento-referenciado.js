@@ -31,7 +31,13 @@ module.exports = {
       }
     }
     await tela.botao(p, 'Finalizar', { escopo: dlg });
-    await tela.dropdown(p, p, 'Tipo do Frete', 'Sem Ocorr').catch((e) => t.anotar('Tipo do Frete não preenchido: ' + e.message.slice(0, 120)));
+    // Tipo do Frete às vezes não abre no 1º clique (o 2º abre): tenta de novo e ANOTA o contorno
+    try { await tela.dropdown(p, p, 'Tipo do Frete', 'Sem Ocorr'); }
+    catch (e) {
+      await p.keyboard.press('Escape'); await tela.pronto(p, 600);
+      t.anotar('ATENÇÃO: Tipo do Frete não abriu na 1ª tentativa — automação tentou de novo');
+      await tela.dropdown(p, p, 'Tipo do Frete', 'Sem Ocorr').catch((e2) => t.anotar('Tipo do Frete não preenchido: ' + e2.message.slice(0, 120)));
+    }
     // naturezas de devolução exigem "Informação Complementar": abre pela seta e escolhe a primeira (como no validador)
     if (a.infoCompl !== false) {
       const lab = p.locator('label:visible').filter({ hasText: /^\s*Informação Complementar\s*\*?\s*$/ }).first();

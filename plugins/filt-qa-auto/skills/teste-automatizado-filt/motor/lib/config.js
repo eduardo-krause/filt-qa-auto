@@ -19,9 +19,13 @@ cfg.home = HOME;
 cfg.tarefa = (process.env.FILT_QA_TAREFA || 'padrao').toUpperCase();
 const num = (cfg.tarefa.match(/(\d+)/) || [])[1];
 // faixa de portas diferente da do validador (cdpPort + 1..400) para os dois rodarem juntos sem se atrapalhar
-cfg.cdpPort = (cfg.playwright.cdpPort || 9333) + 500 + (num ? 1 + (Number(num) % 400) : 0);
-cfg.perfilNavegador = path.join(HOME, '.perfil-chrome', cfg.tarefa);
-cfg.arquivoSessao = path.join(HOME, 'sessoes', cfg.tarefa + '.json');
+// FILT_QA_INSTANCIA=2,3...: outra instância do motor da MESMA tarefa rodando junto (outro usuário do config, ex.: "paralelo"),
+// com porta, perfil do navegador e sessão próprios. O sistema aceita um login por usuário: cada instância usa um usuário.
+cfg.instancia = Number(process.env.FILT_QA_INSTANCIA || 1);
+const sufixo = cfg.instancia > 1 ? `-i${cfg.instancia}` : '';
+cfg.cdpPort = (cfg.playwright.cdpPort || 9333) + 500 + (num ? 1 + (Number(num) % 400) : 0) + (cfg.instancia > 1 ? 1000 * (cfg.instancia - 1) : 0);
+cfg.perfilNavegador = path.join(HOME, '.perfil-chrome', cfg.tarefa + sufixo);
+cfg.arquivoSessao = path.join(HOME, 'sessoes', cfg.tarefa + sufixo + '.json');
 cfg.lerSessao = () => { try { return JSON.parse(fs.readFileSync(cfg.arquivoSessao, 'utf8')); } catch (e) { return {}; } };
 cfg.gravarSessao = (s) => fs.writeFileSync(cfg.arquivoSessao, JSON.stringify({ ...cfg.lerSessao(), ...s }, null, 2));
 
