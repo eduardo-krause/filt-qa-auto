@@ -62,6 +62,7 @@ Só o banco do AT da tarefa; bloqueia escrita e outros bancos. Comparar **espera
 Scripts auxiliares de uma tarefa (ex.: simulador de um cálculo) ficam na pasta de trabalho da tarefa, não no skill.
 
 ## Subagente para tarefas repetitivas
+(O subagente do **mesmo modelo** para criar/consertar passo e procurar no código está em "Economia de contexto" no `SKILL.md`; esta seção é a do modelo mais barato, só para repetição.)
 Para gastar menos, repetições podem ir para um subagente (ferramenta Agent, `model: "sonnet"`), que devolve só o resultado. **Regras:**
 - **Só para trabalho repetitivo:** o mesmo fluxo várias vezes, mudando só os dados (ex.: lançar 6 notas iguais variando valor/quantidade, cadastrar vários itens do mesmo jeito, repetir a mesma consulta para vários registros).
 - **A primeira execução é sempre minha**, na conversa principal: vejo a tela, confirmo o fluxo, ajusto o passo e confiro no banco. Só depois de funcionar comigo eu delego as repetições.

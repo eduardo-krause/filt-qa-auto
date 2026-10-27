@@ -113,7 +113,7 @@ module.exports = {
 Regras do passo:
 - **Genérico**: nada de nome de base, cliente, CPF ou número de tarefa (o plugin é compartilhado). Dado vem pelos `args`.
 - Use os ajudantes de `motor/lib/tela.js` (`botao`, `autocomplete`, `digitar`, `qtd`, `moeda`, `data`, `menuKebab`, `confirmar`, `salvar`, `pronto`).
-- **Rotas e ids de campo: conferir no código-fonte do Filt** (disco Z:, front em `nimitz\packages\nimitz\src\app\...`, ex.: `vendas\vendas.routing.module.ts`) em vez de tentar pela tela. Se o Z: não aparecer montado, o caminho de rede dele está em `net use`.
+- **Rotas e ids de campo:** primeiro `referencias/mapa-telas.md` (gerado dos passos que já funcionam; `node motor/mapa.js` depois de criar/consertar passo). O que não estiver lá: **conferir no código-fonte do Filt** (disco Z:, front em `nimitz\packages\nimitz\src\app\...`, ex.: `vendas\vendas.routing.module.ts`) em vez de tentar pela tela. Se o Z: não aparecer montado, o caminho de rede dele está em `net use`.
 - Quando a ação cria algo, devolva o identificador lido **do banco** (número do pedido, nota, título), não só o que a tela mostrou.
 - Erro claro: `throw new Error('pedido 123 não aparece no FATURAMENTO')` — a mensagem vai para o resultado.
 - Ação que gera documento fiscal: chame `t.tela.exigirDfe()` antes.

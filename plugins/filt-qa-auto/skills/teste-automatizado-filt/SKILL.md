@@ -22,7 +22,7 @@ O plugin é **independente**: regras do sistema, critérios, ferramentas e relat
 | **Índice por tela** | `~/.claude/historico-validacoes/indice-testes-automatizados.md` | todos os casos automatizados de todas as tarefas, agrupados pela tela que usam |
 
 Guia para escrever suíte e passo: `referencias/escrever-suite.md` (ler ao montar ou alterar uma suíte).
-Referências em `referencias/` (ler quando a situação aparecer): `criterios-de-julgamento.md` (regras invioláveis e o que é/não é bug), `ferramentas.md`, `relatorio.md` (formato do `dados.json`), `producao.md` (comparar com produção), `layout-e-design-system.md` (tarefa de tela/componente), `primeira-vez.md` (máquina ainda não preparada).
+Referências em `referencias/` (ler quando a situação aparecer): `criterios-de-julgamento.md` (regras invioláveis e o que é/não é bug), `ferramentas.md`, `relatorio.md` (formato do `dados.json`), `producao.md` (comparar com produção), `layout-e-design-system.md` (tarefa de tela/componente), `primeira-vez.md` (máquina ainda não preparada), `mapa-telas.md` (onde fica cada coisa em cada tela — gerado por `node motor/mapa.js`).
 
 ## Conhecimento do sistema e critérios
 - **Como o sistema funciona** (fluxos de tela, rotas, componentes, onde cada dado fica no banco, regras de negócio confirmadas): skill **`regras-sistema-filt`** deste plugin — carregada no Passo 1; reler a referência da rotina antes de escrever ou consertar um passo.
@@ -65,7 +65,8 @@ Regra de negócio que **não** estiver nessas fontes não é deduzida da tela: p
 - **Suíte já existe** (reteste): reaproveitar; conferir `at.url`/`at.base` com o Passo 0 e atualizar se o AT mudou; acrescentar os casos novos (reprovações novas, limites que faltavam).
 - **Suíte nova:** `automacao/suite.js` a partir de `modelos/suite-modelo.js` — **um caso para cada item do plano**, com `origem`, `telas` (nome do item no menu), `esperado` e conferências no banco. Função `preparar(t)` para pré-condições (estoque, cadastros).
 - **Reaproveitar** os passos de `passos/` (procurar pela pasta da tela e pelo nome da ação). Ação que não existe → **arquivo novo** `passos/<área>/<tela>/<verbo-objeto>.js` (genérico), um cenário por arquivo; tela nova → pasta nova. Nunca juntar várias ações num arquivo genérico. **Passo novo roda primeiro sozinho** (`--casos X`) e só entra na rodada completa depois de funcionar.
-- Antes de cadastrar dado, procurar na base o que serve (regra 8 de `criterios-de-julgamento.md`); conferir rotas e ids de campo no código-fonte (disco Z:).
+- Antes de cadastrar dado, procurar na base o que serve (regra 8 de `criterios-de-julgamento.md`).
+- **Onde fica cada coisa:** primeiro `referencias/mapa-telas.md` (rota, campos, ids, botões, ⋮, tabelas e passos prontos de cada tela, gerado dos passos que funcionam). O que não estiver lá → código-fonte (disco Z:), como sempre.
 
 ## Passo 5 — Rodar
 ```bash
@@ -91,12 +92,21 @@ Erro de passo **não** vira resultado da tarefa: corrigir o passo e rodar de nov
 Montar `<NMTZ>/dados.json` (formato em `referencias/relatorio.md`) a partir de `resultados/casos-para-dados-json.json` + casos manuais + bugs (da tarefa e fora) + pontos para a PO, e gerar o PDF com `python ferramentas/relatorio.py <NMTZ>/dados.json`. Parecer **APROVAR** só com todos os casos da tarefa OK. Responder com parecer, falhas (com números), **todos os bugs** e o caminho do PDF.
 
 ## Passo 8 — Encerramento
-- Fluxos novos em `~/.claude/filt-qa/fluxos-novos.md` (tipos acima); `node motor/indice.js` para atualizar o índice por tela.
+- Fluxos novos em `~/.claude/filt-qa/fluxos-novos.md` (tipos acima); `node motor/indice.js` para atualizar o índice por tela; `node motor/mapa.js` para atualizar o mapa das telas (sempre que criar ou consertar passo).
 - Passo genérico criado ou corrigido fica nesta skill — avisar a pessoa (publicar no GitHub só com ok dela).
 
 ## Navegador do motor × ferramentas
 - O motor e as `ferramentas/` têm portas, navegador, perfil e sessão separados; os dois só **leem** o `config.json` e o banco.
 - **Único conflito:** o mesmo usuário logado nos dois ao mesmo tempo derruba a sessão do outro (o sistema aceita um login por usuário). Enquanto a suíte roda, não fazer login pelo `run.js` com o mesmo usuário (nem pelo navegador da pessoa com o mesmo CPF). Se acontecer, o motor para com "SESSÃO DERRUBADA" e diz de qual caso continuar (`--de <caso>`).
+
+## Economia de contexto (sem trocar qualidade por economia)
+Medido nas validações: ~75% do custo é a conversa inteira sendo relida a cada chamada — sessões longas chegam a 400–800 mil tokens de contexto e 150–480 chamadas. O que encarece é **contexto grande × muitas chamadas**, não as regras. Por isso:
+1. **Ciclo de "fazer funcionar" vai para um subagente do mesmo modelo** (ferramenta Agent **sem** `model`, herda o meu): criar ou consertar um passo até o caso rodar (`--casos X`), achar no código do Z: a rota/id de campo/tabela que não está no `mapa-telas.md`, montar o `preparar(t)`. O prompt leva: `FILT_QA_TAREFA`, caminho da suíte e do passo, o que o caso precisa fazer, as regras invioláveis 1–5 e o que devolver — arquivos alterados, comando que passou, uma linha por caso e **tudo o que viu de diferente** (erro, aviso, toast, valor inesperado, tela estranha) com a mensagem exata. Ele **não decide se é bug** e **para e devolve** em vez de contornar (teclado no lugar do clique, `force`, repetir até passar, JS) — contorno é achado (ver `criterios-de-julgamento.md`). Enquanto ele usa o navegador/motor, não rodar nada com o mesmo usuário.
+   **Fica comigo, na conversa principal:** plano e `esperado`, análise de todo ❌ FALHOU e ⚠️ ERRO que não seja "tela mudou", reproduzir reprovação, layout, comparação com produção, pergunta de regra de negócio, relatório. Conferir no banco/código o que o subagente devolveu antes de usar.
+2. **Menos chamadas:** chamadas independentes na mesma resposta; várias ações num único `acoes`; várias conferências numa só consulta do `db.py`.
+3. **Saída curta:** arquivo grande por trecho (`grep -n` + `sed -n`), nunca `cat` de suíte/passo/resultado inteiro; saídas longas com `| tail`/`| head`; do `ultimo.md` só os casos que não deram OK.
+4. **Pausa entre fases:** ao fechar uma fase (plano, suíte rodando, análise), atualizar `<NMTZ>/progresso-<data>.md` com o estado (casos e status, o que falta, achados ainda sem conclusão). Se a conversa já estiver longa, sugerir à pessoa `/clear` e chamar a skill de novo — o Passo 1 retoma pelo progresso.
+Consumo por sessão para comparar antes/depois: `python ferramentas/medir_consumo.py [NMTZ-XXXX]`.
 
 ## Regras invioláveis (resumo — completas em `referencias/criterios-de-julgamento.md`)
 1. **Só o AT da própria tarefa** — o login recusa URL de outra demanda ou de produção.
