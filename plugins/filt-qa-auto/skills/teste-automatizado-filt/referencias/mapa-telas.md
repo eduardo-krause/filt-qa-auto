@@ -1,6 +1,6 @@
 # Mapa das telas (gerado a partir dos passos)
 
-Gerado em 27/10/2026, 10:19:39 por `node motor/mapa.js` — não editar à mão.
+Gerado em 28/10/2026, 12:51:55 por `node motor/mapa.js` — não editar à mão.
 Só tem o que os passos usam e já funcionou. **Faltou campo, botão ou tabela → procurar no código-fonte (Z:)**, como antes; depois de criar/consertar o passo, gerar o mapa de novo.
 Regras e fluxos de negócio continuam na skill `regras-sistema-filt`; este mapa é só "onde fica cada coisa".
 
@@ -13,7 +13,7 @@ Pasta: `passos/cadastros/matriz-filial/`
 | Arquivo | Passo | O que faz |
 |---|---|---|
 | `abrir-filial.js` | `abrir` | Abrir filial. |
-| `ler-rotulos-de-precificacao.js` | `rotulosPrecificacao` | Texto do card Precificação (a partir do título), para conferir a ordem dos campos. |
+| `ler-rotulos-de-precificacao.js` | `rotulosPrecificacao` | Ler rotulos de precificacao. |
 | `salvar-filial.js` | `salvar` | Salvar filial. |
 
 ## Cadastros › Financeiro › Conta Bancária/Caixa (/fiscal/configuracao-portador/form?id=N)
@@ -25,11 +25,11 @@ Pasta: `passos/cadastros/conta-bancaria/`
 |---|---|---|
 | `abrir-conta-bancaria.js` | `abrir` | Abrir conta bancaria. |
 | `alterar-campo-e-salvar.js` | `alterarCampo` | Alterar campo e salvar. |
-| `configurar-conta-bancaria.js` | `configurar` | Abre a conta, ajusta provedor/tipo/credenciais e salva. Confirma o aviso de limpar credenciais quando sai do Híbrido. |
-| `escolher-opcao-de-lista-do-formulario.js` | `escolher` | Escolhe a opção do dropdown e devolve os diálogos que abriram (ex.: aviso de limpar credenciais). args: { rotulo, opcao } |
-| `ler-credenciais-visiveis.js` | `credenciaisVisiveis` | Rótulos de credenciais visíveis (card de credenciais do híbrido). |
+| `configurar-conta-bancaria.js` | `configurar` | Configurar conta bancaria. |
+| `escolher-opcao-de-lista-do-formulario.js` | `escolher` | Escolher opcao de lista do formulario. |
+| `ler-credenciais-visiveis.js` | `credenciaisVisiveis` | Ler credenciais visiveis. |
 | `ler-opcoes-de-lista-do-formulario.js` | `dropdownEstado` | Ler opcoes de lista do formulario. |
-| `salvar-conta-bancaria.js` | `salvar` | Salvar do form, juntando avisos. |
+| `salvar-conta-bancaria.js` | `salvar` | Salvar conta bancaria. |
 
 ## Cadastros › Fórmulas › Fórmula (/fiscal/formula, form /fiscal/formula/form)
 
@@ -41,12 +41,12 @@ Pasta: `passos/cadastros/formula/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `abrir-nova-formula.js` | `formNovo` | Abre Novo no tipo pedido e devolve o que o form mostra. → { tipo, acordeoes: { 'Variáveis da Nota de Entrada': [...] } } |
-| `criar-formula.js` | `criar` | Cria a fórmula pela tela. termos: rótulos de variável ("Valor Total Item - NF Entrada") e operadores ("(", "+", "/", "1"...), |
-| `excluir-formula.js` | `excluir` | Exclui pelo ⋮ › Excluir do form. Fórmula com vínculo: o sistema responde com o diálogo |
-| `ler-campo-de-formula-no-cadastro.js` | `campo` | Campo autocomplete de fórmula na tela aberta (ex.: input#formulaValorAquisicao no Item/Grupo/Filial). |
-| `ler-formula-montada.js` | `montada` | Fórmula montada na tela de um cadastro existente (espera os termos carregarem). → [termos] |
-| `ler-tipos-de-formula.js` | `tipos` | Opções do modal "Selecione o Tipo" (na ordem) e do filtro Tipo da listagem. → { modal:[...], filtro:[...] } |
+| `abrir-nova-formula.js` | `formNovo` | Abrir nova formula. |
+| `criar-formula.js` | `criar` | Criar formula. |
+| `excluir-formula.js` | `excluir` | Excluir formula. |
+| `ler-campo-de-formula-no-cadastro.js` | `campo` | Ler campo de formula no cadastro. |
+| `ler-formula-montada.js` | `montada` | Ler formula montada. |
+| `ler-tipos-de-formula.js` | `tipos` | Ler tipos de formula. |
 
 ## Cadastros › Itens › Grupos (/fiscal/grupo-item)
 
@@ -57,22 +57,29 @@ Pasta: `passos/cadastros/grupo-item/`
 | Arquivo | Passo | O que faz |
 |---|---|---|
 | `abrir-grupo.js` | `abrir` | Abrir grupo. |
-| `ler-rotulos-de-precificacao.js` | `rotulosPrecificacao` | Rótulos do card Precificação na ordem. |
+| `ler-rotulos-de-precificacao.js` | `rotulosPrecificacao` | Ler rotulos de precificacao. |
 | `salvar-grupo.js` | `salvar` | Salvar grupo. |
 
 ## Cadastros › Itens › Item (/fiscal/item, form /fiscal/item/form?id=<ID_ITEM_FILIAL>)
 
 Pasta: `passos/cadastros/item/`
 - **Rotas:** `/fiscal/item`, `/fiscal/item/form`
-- **Ids:** `formulaCustoPresente`, `valorUnitarioAquisicao`
+- **Campos (rótulo):** 1
+- **Ids:** `descricao`, `dropdown-help`, `fatorConversao`, `formulaCustoPresente`, `itemSemelhante`, `tipoConversao`, `unidadeMedida`, `valorPrecoVenda`, `valorUnitarioAquisicao`
 - **Botões:** Novo
+- **Tabelas no banco:** `ITEM`, `ITEM_FILIAL`, `ITEM_FILIAL_VALORES`, `ITEM_SIMILAR`
+- **Ajudantes comuns:** `passos/_comum.js`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `abrir-item.js` | `abrir` | Abre o item (form?id=ID_ITEM_FILIAL) ou um item novo (novo: true). |
-| `ler-campos-de-preco-e-custo.js` | `precoCusto` | Rótulos do card "Preço e custo variáveis" na ordem e estado de campos pedidos pelo id. |
-| `ler-rotulos-de-estoque.js` | `rotulosEstoque` | Rótulos do card Estoque (ordem), para conferir a posição de campos. |
+| `abrir-item.js` | `abrir` | Abrir item. |
+| `alterar-descricao-e-unidade.js` | `alterarDescricaoUnidade` | Alterar descricao e unidade. |
+| `alterar-preco-de-venda.js` | `alterarPrecoVenda` | Alterar preco de venda. |
+| `copiar-item.js` | `copiar` | ⋮ (#dropdown-help) › Copiar › confirmação: o sistema copia o item (com tributação, grupos, locais) e abre a cópia em outra aba. |
+| `ler-campos-de-preco-e-custo.js` | `precoCusto` | Ler campos de preco e custo. |
+| `ler-rotulos-de-estoque.js` | `rotulosEstoque` | Ler rotulos de estoque. |
 | `salvar-item.js` | `salvar` | Salvar item. |
+| `vincular-item-similar.js` | `vincularSimilar` | Vincular item similar. |
 
 ## Cadastros › Pessoa (/fiscal/pessoa/form?id=N), aba ENDEREÇOS
 
@@ -85,7 +92,7 @@ Pasta: `passos/cadastros/pessoa/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `trocar-cep-do-endereco.js` | `trocarCep` | Troca o CEP do endereço Principal pelo lápis da aba Endereços e salva a pessoa. |
+| `trocar-cep-do-endereco.js` | `trocarCep` | Trocar cep do endereco. |
 
 ## Configurações › Receituário Agronômico (/reag/configuracao)
 
@@ -109,7 +116,7 @@ Pasta: `passos/financeiro/acerto-financeiro-baixa/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `quitar-titulos-em-dinheiro.js` | `quitar` | Baixa (quitação) em Dinheiro de títulos a receber. args: { pessoa, titulos:['01000000482-1/2', ...] } |
+| `quitar-titulos-em-dinheiro.js` | `quitar` | Quitar titulos em dinheiro. |
 
 ## financeiro › acerto-financeiro
 
@@ -119,7 +126,7 @@ Pasta: `passos/financeiro/acerto-financeiro/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `acertar-em-duplicata.js` | `duplicata` | Acerto aberto: forma Duplicata numa conta bancária, com a forma de parcelamento (texto exato: "30 DIAS", "30/60/90"). |
+| `acertar-em-duplicata.js` | `duplicata` | Acertar em duplicata. |
 
 ## Financeiro › Adiantamentos (/financeiro/adiantamentos/form)
 
@@ -143,7 +150,7 @@ Pasta: `passos/financeiro/estorno/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `estornar-baixa-de-titulo.js` | `estornar` | Estorno da baixa de um título. args: { pessoa, titulo: '01000000482-2/2', dataBaixa: 'dd/mm/aaaa' } |
+| `estornar-baixa-de-titulo.js` | `estornar` | Estornar baixa de titulo. |
 
 ## geral › estabelecimento
 
@@ -161,14 +168,14 @@ Pasta: `passos/mobile/app-pedido-venda/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `adicionar-item-defensivo.js` | `adicionar` | Na busca de itens: pesquisa, abre o carrinho do card, preenche e confirma. |
+| `adicionar-item-defensivo.js` | `adicionar` | Adicionar item defensivo. |
 | `alterar-quantidade-do-item.js` | `quantidade` | Alterar quantidade do item. |
-| `atualizar-dados-do-app.js` | `atualizarDados` | → texto do aviso de conclusão |
+| `atualizar-dados-do-app.js` | `atualizarDados` | Atualizar dados do app. |
 | `confirmar-ou-salvar-item.js` | `confirmar` | Confirmar ou salvar item. |
 | `criar-cabecalho-do-pedido.js` | `criar` | Criar cabecalho do pedido. |
 | `escolher-equipamento-de-aplicacao.js` | `equipamento` | Escolher equipamento de aplicacao. |
 | `fazer-login-no-app.js` | `entrar` | Fazer login no app. |
-| `finalizar-e-enviar-pedido.js` | `finalizarEEnviar` | → { status, pedido } (pedido = ID_PEDIDO no ERP) |
+| `finalizar-e-enviar-pedido.js` | `finalizarEEnviar` | Finalizar e enviar pedido. |
 | `informar-numero-de-aplicacoes.js` | `aplicacoes` | Informar numero de aplicacoes. |
 | `ler-card-aplicacoes.js` | `ler` | Ler card aplicacoes. |
 | `trocar-receituario-padrao.js` | `receituario` | Trocar receituario padrao. |
@@ -185,9 +192,9 @@ Pasta: `passos/fiscal/conhecimento-transporte/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `alterar-valor-do-cte.js` | `alterarValor` | Muda o valor do componente Frete de um CT-e salvo e refaz o acerto em Dinheiro. |
-| `excluir-cte.js` | `excluirCte` | Exclui o CT-e pelo ⋮ › Excluir do formulário (CT-e de entrada não tem Cancelar). args: { id } → { existe, avisos } |
-| `lancar-cte-de-entrada.js` | `entrada` | → { id } (ID_CONHECIMENTO_TRANSPORTE lido do banco) |
+| `alterar-valor-do-cte.js` | `alterarValor` | Alterar valor do cte. |
+| `excluir-cte.js` | `excluirCte` | Excluir cte. |
+| `lancar-cte-de-entrada.js` | `entrada` | Lancar cte de entrada. |
 
 ## Movimentações Fiscais › Nota Fiscal (/nota/nota-fiscal)
 
@@ -204,14 +211,14 @@ Pasta: `passos/fiscal/nota-fiscal/`
 |---|---|---|
 | `cancelar-nota.js` | `cancelar` | Cancelar nota. |
 | `consultar-nfe-autorizadas.js` | `autorizadas` | Consultar nfe autorizadas. |
-| `consultar-notas-do-pedido.js` | `doPedido` | Notas do pedido criadas depois de `desdeId`: [{ ID_NOTA_FISCAL, NUMERO_DOCUMENTO }] |
+| `consultar-notas-do-pedido.js` | `doPedido` | Consultar notas do pedido. |
 | `consultar-titulos-da-nota.js` | `titulos` | Consultar titulos da nota. |
-| `consultar-ultima-nota.js` | `ultimoId` | Maior ID_NOTA_FISCAL atual (para achar as notas criadas depois de uma ação). |
+| `consultar-ultima-nota.js` | `ultimoId` | Consultar ultima nota. |
 | `emitir-nota-com-documento-referenciado.js` | `comReferencia` | Emitir nota com documento referenciado. |
-| `emitir-nota-de-venda-com-duplicata.js` | `vendaComDuplicata` | NF-e de venda própria com 1 item e acerto em Duplicata numa conta bancária. |
-| `excluir-nota.js` | `excluir` | Exclui a nota pelo ⋮ › Excluir (confirmação "Excluir"). → { toasts, dialogos } |
-| `inutilizar-nota.js` | `inutilizar` | NF-e própria salva e NÃO autorizada (rejeitada): ⋮ › Inutilizar Documento → justificativa → confirmar. |
-| `lancar-nota-de-entrada-compra.js` | `entradaTerceiros` | Nota de ENTRADA de terceiros pela tela (ex.: COMPRA DE MERCADORIA), com acerto em Dinheiro. |
+| `emitir-nota-de-venda-com-duplicata.js` | `vendaComDuplicata` | Emitir nota de venda com duplicata. |
+| `excluir-nota.js` | `excluir` | Excluir nota. |
+| `inutilizar-nota.js` | `inutilizar` | Inutilizar nota. |
+| `lancar-nota-de-entrada-compra.js` | `entradaTerceiros` | Lancar nota de entrada compra. |
 | `salvar-nota-aberta-por-outra-rotina.js` | `salvarAberta` | Salvar nota aberta por outra rotina. |
 
 ## Processos › Financeiro › Duplicatas a Receber (/financeiro/duplicata-receber/form?id=N)
@@ -223,8 +230,8 @@ Pasta: `passos/financeiro/duplicatas-receber/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `emitir-boleto.js` | `boleto` | ⋮ → Gerar Boleto / Reimprimir Boleto → (conta) → desmarca e-mail → Emitir, juntando avisos e PDFs. |
-| `ler-opcoes-do-menu-da-duplicata.js` | `opcoes` | Opções do menu ⋮ do form da duplicata. args: { id } |
+| `emitir-boleto.js` | `boleto` | Emitir boleto. |
+| `ler-opcoes-do-menu-da-duplicata.js` | `opcoes` | Ler opcoes do menu da duplicata. |
 
 ## Processos › Financeiro › Lançamentos Financeiros (/financeiro/lancamento-financeiro)
 
@@ -238,10 +245,10 @@ Pasta: `passos/financeiro/lancamentos-financeiros/`
 | Arquivo | Passo | O que faz |
 |---|---|---|
 | `consultar-titulos-criados.js` | `titulosDesde` | Consultar titulos criados. |
-| `consultar-ultimo-titulo.js` | `ultimoTitulo` | Maior ID_DOCUMENTO_FINANCEIRO (para achar os títulos criados por uma ação). |
+| `consultar-ultimo-titulo.js` | `ultimoTitulo` | Consultar ultimo titulo. |
 | `criar-lancamento-com-duplicata.js` | `criarComDuplicata` | Criar lancamento com duplicata. |
-| `ler-texto-da-tela.js` | `textoTela` | Texto da tela como evidência curta (ex.: conferir uma mensagem que ficou fixa). |
-| `tratar-dialogo-depois-de-salvar.js` | `posSalvar` | Diálogo depois do Salvar ("Salvo com sucesso" com Emitir Boletos): emite (capturando o PDF) ou fecha. |
+| `ler-texto-da-tela.js` | `textoTela` | Ler texto da tela. |
+| `tratar-dialogo-depois-de-salvar.js` | `posSalvar` | Tratar dialogo depois de salvar. |
 
 ## Processos › Financeiro › Remessa Bancária (/financeiro/gerar-remessa)
 
@@ -253,8 +260,8 @@ Pasta: `passos/financeiro/remessa-bancaria/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `gerar-arquivo-de-remessa.js` | `gerar` | Marca as linhas (índices ou textos contidos) e clica Gerar arquivo; salva o .REM em `pasta`. |
-| `pesquisar-titulos-para-remessa.js` | `pesquisar` | Pesquisa os boletos de um portador. args: { portador: '12345', estabelecimento?, de: 'dd/mm/aaaa', ate } |
+| `gerar-arquivo-de-remessa.js` | `gerar` | Gerar arquivo de remessa. |
+| `pesquisar-titulos-para-remessa.js` | `pesquisar` | Pesquisar titulos para remessa. |
 
 ## Processos › Precificação › Formação de Preço (/precificacao/formacao-preco)
 
@@ -263,7 +270,7 @@ Pasta: `passos/precificacao/formacao-preco/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `ler-selecao-da-formacao-de-preco.js` | `selecao` | → { cabecalho:[...], linha:{ coluna: valor } / null, todas:[...] } |
+| `ler-selecao-da-formacao-de-preco.js` | `selecao` | Ler selecao da formacao de preco. |
 
 ## Processos › Vendas › Antecipação Financeira Pedidos (/vendas/antecipacao-financeira-pedido)
 
@@ -275,10 +282,10 @@ Pasta: `passos/vendas/antecipacao-financeira-pedidos/`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
-| `desvincular-adiantamento.js` | `desvincular` | Desvincula um adiantamento pelo Histórico do pedido. args: { pessoa, pedido, adiantamento: '50087' } |
-| `ler-pedido-e-valor-a-baixar.js` | `ler` | Linha do pedido na tela + "Valor a baixar" oferecido. args: { pessoa, pedido }  → { linha, valorOferecido } |
-| `listar-adiantamentos-disponiveis.js` | `disponiveis` | Adiantamentos listados na janela "Gerar antecipações" do pedido (fecha sem salvar). → [ 'código ... saldo', ... ] |
-| `vincular-adiantamento.js` | `vincular` | Vincula adiantamentos ao pedido. args: { pessoa, pedido, adiantamentos:['50087'], valorBaixar? } |
+| `desvincular-adiantamento.js` | `desvincular` | Desvincular adiantamento. |
+| `ler-pedido-e-valor-a-baixar.js` | `ler` | Ler pedido e valor a baixar. |
+| `listar-adiantamentos-disponiveis.js` | `disponiveis` | Listar adiantamentos disponiveis. |
+| `vincular-adiantamento.js` | `vincular` | Vincular adiantamento. |
 
 ## Processos › Vendas › Aprovação Pedido (/vendas/aprovacao-pedidos)
 
@@ -303,30 +310,33 @@ Pasta: `passos/vendas/consulta-estoque-movimentacao/`
 Pasta: `passos/vendas/pedido-venda/`
 - **Rotas:** `/vendas/carrinho`, `/vendas/pedido`
 - **Campos (rótulo):** Bandeira · Cliente · Forma de pagamento · Forma Parcelamento · Natureza de operação · Operadora · Parâmetro de preço · Vendedor
-- **Ids:** `dataPagamento`, `formaParcelamento`, `observacoesPedido`, `quantidadeEntrega-<n> (prefixo)`
+- **Ids:** `dataPagamento`, `formaParcelamento`, `formEntrega`, `observacoesPedido`, `quantidadeEntrega-<n> (prefixo)`
 - **Botões:** Adicionar · Cancelar · Carrinho · Cartão · Concluir Pedido · Confirmar · Editar · Gerar Nota · GERAR NOTA · Item · Novo · Processar · Próximo
 - **Menu ⋮:** Cancelar
-- **Ajudantes comuns:** `passos/_pedido.js`
+- **Tabelas no banco:** `ITEM`, `NOTA_FISCAL`, `NOTA_FISCAL_ELETRONICA`, `PEDIDO_SOLICITACAO_ENTREGA`, `VIASOFT`
+- **Ajudantes comuns:** `passos/_nota.js`, `passos/_pedido.js`
 
 | Arquivo | Passo | O que faz |
 |---|---|---|
 | `adicionar-item-defensivo.js` | `adicionar` | Adicionar item defensivo. |
-| `adicionar-item-na-edicao.js` | `adicionarItem` | Em edição: inclui mais um item (botão Item → busca → ADICIONAR → Carrinho). args: { item, qtd, casas, desconto? } |
-| `alterar-validade.js` | `alterarValidade` | Menu ⋮ → Alterar Validade do Pedido → data → Confirmar. Devolve se o diálogo continuou aberto depois do Confirmar. |
-| `cancelar-pedido.js` | `cancelar` | Menu ⋮ → Cancelar: cancela quantidades por linha ou "Cancelar Todos". args: { pedido, qtds?:[1], casas, todos?:false, motivo? } |
-| `concluir-pedido.js` | `concluir` | Concluir Pedido no carrinho aberto (novo ou em edição). Devolve os avisos (toasts). |
+| `adicionar-item-na-edicao.js` | `adicionarItem` | Adicionar item na edicao. |
+| `alterar-validade.js` | `alterarValidade` | Alterar validade. |
+| `cancelar-pedido.js` | `cancelar` | Cancelar pedido. |
+| `concluir-pedido.js` | `concluir` | Concluir pedido. |
 | `conferir-situacao-do-pedido.js` | `confere` | Conferir situacao do pedido. |
-| `consultar-situacao-do-pedido.js` | `situacao` | Situação no banco: { ID_PEDIDO, STATUS_PEDIDO, PAGO (0/1), VALOR_TOTAL_CONTABIL } |
-| `criar-pedido.js` | `criar` | Novo pedido completo: condições de venda → itens → (cartão) → Concluir Pedido. |
-| `entrar-em-edicao.js` | `editar` | Entra na edição do pedido (Editar → Sim). Pedido parcialmente entregue abre a "edição parcial". |
-| `escolher-cartao-de-credito.js` | `cartaoCredito` | Carrinho com forma Cartão: marca Crédito e escolhe a Forma Parcelamento. args: { parcelamento: '3X' } |
-| `escrever-observacao.js` | `observacao` | Em edição: escreve a observação do pedido (textarea#observacoesPedido). |
+| `consultar-situacao-do-pedido.js` | `situacao` | Consultar situacao do pedido. |
+| `criar-pedido.js` | `criar` | Criar pedido. |
+| `entrar-em-edicao.js` | `editar` | Entrar em edicao. |
+| `escolher-cartao-de-credito.js` | `cartaoCredito` | Escolher cartao de credito. |
+| `escrever-observacao.js` | `observacao` | Escrever observacao. |
+| `excluir-ordem-de-entrega.js` | `excluirOrdem` | Seção Ordem de Entrega do carrinho: ícone "Menu" (ph-dots-three-outline-vertical) da linha › Excluir → confirmação "Excluir". |
 | `faturar-ordem-de-entrega.js` | `faturar` | Faturar ordem de entrega. |
-| `gerar-nota-de-venda-futura.js` | `gerarNotaVendaFutura` | Venda futura: GERAR NOTA no carrinho abre a nota em outra aba; conclui o acerto proposto, salva e fecha a aba. |
-| `gerar-ordem-de-entrega-linha-a-linha.js` | `porLinha` | Ordem de entrega digitando linha a linha e esperando o recálculo de cada uma: a tela redesenha a tabela a cada quantidade |
-| `gerar-ordem-de-entrega.js` | `ordemEntrega` | Ordem de entrega: quantidades por linha do carrinho (ex.: [2] = 2 un na 1ª linha). args: { pedido, quantidades:[2], casas } |
-| `informar-aplicacoes-no-modal-defensivo.js` | `aplicacoes` | Devolve os campos que o modal mostrou (antes e depois). |
-| `remover-item-na-edicao.js` | `removerItem` | Em edição: remove a ÚLTIMA linha do carrinho que contém `texto` (ex.: "CORDA 1,000") e confirma Excluir. |
+| `gerar-nota-de-venda-futura.js` | `gerarNotaVendaFutura` | Gerar nota de venda futura. |
+| `gerar-ordem-de-entrega-com-item-similar.js` | `ordemSimilar` | Ordem de entrega trocando o item do pedido por um item SIMILAR: carrinho › Adicionar (seção Ordem de Entrega) → no diálogo |
+| `gerar-ordem-de-entrega-linha-a-linha.js` | `porLinha` | Gerar ordem de entrega linha a linha. |
+| `gerar-ordem-de-entrega.js` | `ordemEntrega` | Gerar ordem de entrega. |
+| `informar-aplicacoes-no-modal-defensivo.js` | `aplicacoes` | Informar aplicacoes no modal defensivo. |
+| `remover-item-na-edicao.js` | `removerItem` | Remover item na edicao. |
 
 ## Relatórios › Pedido de Venda (/vendas/relatorios/pedido-venda)
 
