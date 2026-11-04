@@ -54,6 +54,18 @@ Ações de `acoes`: `ac`, `dd`, `texto`, `moeda` (casas 2; desconto unitário 5)
   | `grupo_permissao.js` | ligar/desligar ações de um menu no Grupo de Usuários |
   | `tela_texto.js` | texto da tela a partir de um marcador (onde um assistente parou), sem imagem |
 
+## Jira e APK pelas chaves de API (sempre preferir: poupam tokens)
+```bash
+python jira.py NMTZ-XXXX                       # tarefa inteira em texto (≈17 mil caracteres contra ≈145 mil do getJiraIssue)
+python jira.py NMTZ-XXXX dev                   # branches/PRs: "APP alterado" e "backend alterado"
+python jira.py NMTZ-XXXX campo customfield_10050
+python jira.py NMTZ-XXXX anexo "<arquivo>" <pasta>
+python apk.py NMTZ-XXXX [nimitz_pedido_mobile|produtor_rural_mobile] [--sem-instalar]
+```
+- `jira.py` só faz GET (regra 5). `apk.py` dispara o job `Nimitz/Mobile/Flutter_Android` com BRANCH = tarefa se o app mudou, senão `master` (o padrão do job, `main`, não existe nos apps); FLAVOR = tarefa se o backend mudou, senão `homolog`; DESTINO **sempre** `apk` (as opções `play_store_*` publicam na loja). Falha de checkout por `ClosedChannelException` é do agente do Jenkins: rodar de novo.
+- O build manda o status sozinho ao painel "Desenvolvimento" da tarefa no Jira (é do pipeline, não é comentário).
+- Credenciais em `config.json` → `jira` / `jenkins` (como criar: `primeira-vez.md`). Sem token: conector MCP e APK gerado pela pessoa.
+
 ## Banco
 ```bash
 python db.py "select ... from ITEM_FILIAL_VALORES where ID_ITEM_FILIAL=<id>"

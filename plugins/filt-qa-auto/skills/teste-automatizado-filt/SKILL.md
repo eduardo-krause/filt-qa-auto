@@ -13,12 +13,12 @@ O plugin é **independente**: regras do sistema, critérios, ferramentas e relat
 | Peça | Onde fica | O que é |
 |---|---|---|
 | **Motor** | `motor/` (nesta skill) | roda a suíte: login no AT, conferência do DF-e, executa os casos, grava o resultado |
-| **App mobile** | `passos/mobile/app-pedido-venda/*.js` + `passos/_adb.js` | app Android (emulador/celular) comandado por adb: login, atualizar dados, novo pedido, item defensivo, enviar. Usuário do app diferente do usuário do motor (um login por usuário) |
+| **App mobile** | `passos/mobile/app-pedido-venda/*.js` + `passos/_adb.js` | app Android (emulador/celular) comandado por adb: login, atualizar dados, novo pedido, item defensivo, enviar. Usuário do app diferente do usuário do motor (um login por usuário). **APK da tarefa:** `python ferramentas/apk.py <NMTZ>` (Jenkins: decide BRANCH/FLAVOR pelos repositórios da tarefa, DESTINO sempre `apk`, baixa e instala) |
 | **Passos** | `passos/<área>/<tela>/<cenário>.js` (nesta skill) | **uma pasta por tela** (item do menu) e **um arquivo por cenário**, com o nome da ação: `vendas/pedido-venda/criar-pedido.js`, `fiscal/nota-fiscal/excluir-nota.js`, `mobile/app-pedido-venda/trocar-receituario-padrao.js`. Na suíte: `t.passos.vendas.pedidoVenda.criar(...)`. Ajudantes em `<tela>/_apoio.js` e `passos/_*.js` (não viram passo); nomes antigos por `passos/_atalhos.js`. Regras completas em `referencias/escrever-suite.md`. Mudou a tela num deploy → conserta aqui e vale para todas as suítes |
 | **Suíte** | `~/.claude/historico-validacoes/<NMTZ>/automacao/suite.js` | os casos de UMA tarefa: dados, passos e resultado esperado. Fica fora do plugin porque tem base/cliente da pessoa |
 | **Nome dos casos** | na suíte | `id` em kebab-case com tela + ação + dado (`caso-04-calculo-simples-qtd-10-20`, `faturar-pedido-app-407-receituario`), título em frase completa. Nada de sigla (`ESTQ`, `P407`) |
 | **Resultado** | `.../<NMTZ>/automacao/resultados/` | `ultimo.md` (legível), `.json` completo e `casos-para-dados-json.json` (formato do relatório) |
-| **Ferramentas** | `ferramentas/` (nesta skill) | scripts para o que a suíte não cobre: `run.js`/`browser.js` (tela, casos manuais, produção), `db.py` (consulta), `checar_dfe.py`, `gravar.js` (vídeo, só se pedido), `relatorio.py` (PDF), `configurar.py`/`checar_config.py` (preparar a máquina). Uso em `referencias/ferramentas.md` |
+| **Ferramentas** | `ferramentas/` (nesta skill) | scripts para o que a suíte não cobre: `run.js`/`browser.js` (tela, casos manuais, produção), `db.py` (consulta), `jira.py` (tarefa pela API, só leitura), `apk.py` (APK do app), `checar_dfe.py`, `gravar.js` (vídeo, só se pedido), `relatorio.py` (PDF), `configurar.py`/`checar_config.py` (preparar a máquina). Uso em `referencias/ferramentas.md` |
 | **Índice por tela** | `~/.claude/historico-validacoes/indice-testes-automatizados.md` | todos os casos automatizados de todas as tarefas, agrupados pela tela que usam |
 
 Guia para escrever suíte e passo: `referencias/escrever-suite.md` (ler ao montar ou alterar uma suíte).
@@ -30,7 +30,7 @@ Referências em `referencias/` (ler quando a situação aparecer): `criterios-de
 - **Fluxo novo descoberto** (botão, painel, máscara, rota, tabela): anotar em `~/.claude/filt-qa/fluxos-novos.md` com a data e o tipo — `[fato]` sozinho; `[regra]` (regra de negócio) **só depois de perguntar à pessoa**; `[critério]` quando a pessoa decide o que é ou não bug. Escrever genérico, sem id de tarefa, base, CPF ou nome de pessoa. O mantenedor integra essas linhas na `regras-sistema-filt` do repositório e publica.
 
 ## Preparar (sem perguntar nada)
-1. Na pasta `ferramentas/`: `python checar_config.py` (no Linux/WSL, `python3`). Se não der `ok: true`, ler `referencias/primeira-vez.md` e preparar a máquina e os dados da pessoa antes de tudo.
+1. Na pasta `ferramentas/`: `python checar_config.py` (no Linux/WSL, `python3`). Se não der `ok: true`, ler `referencias/primeira-vez.md` e preparar a máquina e os dados da pessoa antes de tudo. Se `opcionais_faltando` trouxer `jira.token` ou `jenkins.token`, pedir à pessoa (junto com o Passo 0, uma vez só) as chaves de API, com o passo a passo de `primeira-vez.md` — elas poupam os tokens dela; se recusar, seguir pelo conector MCP.
 2. Na pasta `motor/`: se não houver `node_modules`, rodar `npm install` (instala só o `mysql2`; o Playwright é o do `config.json` → `playwright.nodeModules`).
 
 ## Passo 0 — Antes de começar, SEMPRE pedir à pessoa
@@ -50,7 +50,7 @@ Se a URL citar outra demanda (número `nmtz-` diferente da tarefa), não usar: a
 Regra de negócio que **não** estiver nessas fontes não é deduzida da tela: parar e perguntar à pessoa antes de escrever o `esperado`.
 
 ## Passo 2 — Entender a tarefa
-`getJiraIssue` (cloudId `nimitz.atlassian.net`, fields `summary, description, customfield_10050, customfield_10049, status, comment, attachment, issuelinks` — `customfield_10050` = **Casos de testes**, `customfield_10049` = Plano de Testes —, `expand: "changelog"`, `responseContentFormat: "markdown"`), links de Confluence da descrição (`searchConfluenceUsingCql` para a rotina), tarefas ligadas. **Reteste:** levantar **todas** as reprovações anteriores (campo "Motivo Reprovação", comentários, relatórios anteriores) — cada uma vira caso.
+**Sempre primeiro pela chave de API** (poupa tokens): `python ferramentas/jira.py <NMTZ>` (descrição, Casos de testes, Plano de Testes, Motivo Reprovação, comentários, links, anexos, histórico de status) e `python ferramentas/jira.py <NMTZ> dev` (repositórios alterados: app e/ou backend). Só leitura (GET). Se `jira.py` responder `SEM TOKEN`, pedir o token à pessoa como em `referencias/primeira-vez.md`; se ela não quiser, usar o conector: `getJiraIssue` (cloudId `nimitz.atlassian.net`, fields `summary, description, customfield_10050, customfield_10049, status, comment, attachment, issuelinks` — `customfield_10050` = **Casos de testes**, `customfield_10049` = Plano de Testes —, `expand: "changelog"`, `responseContentFormat: "markdown"`), links de Confluence da descrição (`searchConfluenceUsingCql` para a rotina), tarefas ligadas. **Reteste:** levantar **todas** as reprovações anteriores (campo "Motivo Reprovação", comentários, relatórios anteriores) — cada uma vira caso.
 
 ## Passo 3 — Plano de casos
 - **Primeiro todos os casos do campo "Casos de testes"**, com o número e o título do Jira (regra 3 de `criterios-de-julgamento.md`); conferir que o plano tem a mesma quantidade. Depois o que faltar de descrição/critérios/comentários entra como ADICIONADO.

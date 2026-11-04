@@ -10,6 +10,10 @@ A pessoa só instalou o plugin; **todo o resto é feito aqui, sem pedir que ela 
 4. **Pedir na conversa só os dados pessoais que faltam** (`config.faltando` e, se fizer sentido, `opcionais_faltando`), em uma mensagem só, dizendo para que serve cada um:
    - login do ERP: CPF e senha do usuário **principal** (e do **secundário**, se a pessoa for validar permissões);
    - banco de homologação: host, porta, usuário e senha;
+   - **chaves de API (pedir sempre — poupam tokens da pessoa):**
+     - **Jira** (`jira.email` + `jira.token`): e-mail da Viasoft e token criado em https://id.atlassian.com/manage-profile/security/api-tokens › *Criar token de API*. Com ele a tarefa é lida por `jira.py` (texto limpo, ~10x menos contexto que o conector MCP) e `jira.py <NMTZ> dev` mostra os repositórios alterados.
+     - **Jenkins** (`jenkins.usuario` + `jenkins.token`): e-mail da Viasoft e token criado no Jarvis (https://jarvis.viasoftcloud.com.br) › nome da pessoa no canto superior direito › *Security* › *API Token* › *Add new Token*. Com ele `apk.py` gera, baixa e instala o APK do app da tarefa sozinho.
+     Explicar o passo a passo de criação acima. A pessoa pode colar o token na conversa ou gravar ela mesma no `config.json`; se não quiser criar, deixar vazio (o Jira cai no conector MCP e o APK é gerado por ela).
    - opcionais: conta do Figma, **bases de teste dela** em produção (nomes exatos do login) e acesso somente leitura ao banco de produção.
 5. Gravar as respostas **somente** em `~/.claude/filt-qa/config.json` e rodar `python checar_config.py` até `ok: true`. Confirmar para a pessoa, em linguagem simples, que está tudo pronto, sem repetir nenhuma senha.
 

@@ -14,6 +14,8 @@
   },
   "saidaRelatorios": "<pasta onde o PDF do relatório é salvo, ex.: C:/Users/<você>/Downloads>",
   "pastaTrabalho": "~/.claude/historico-validacoes",
+  "jira": { "url": "https://nimitz.atlassian.net", "email": "<seu e-mail da Viasoft>", "token": "<token de API do Atlassian: id.atlassian.com › Segurança › Criar e gerenciar tokens de API>", "uso": "somente leitura da tarefa (jira.py): economiza tokens frente ao conector MCP" },
+  "jenkins": { "url": "https://jarvis.viasoftcloud.com.br", "usuario": "<seu e-mail da Viasoft>", "token": "<token do Jenkins: seu nome › Security › API Token › Add new Token>", "uso": "gerar o APK do app da tarefa (apk.py)" },
   "figma": { "email": "<conta do Figma da equipe>", "senha": "<senha>", "uso": "somente leitura: protótipos e Design System" },
   "producao": {
     "url": "https://app.filterp.com.br",

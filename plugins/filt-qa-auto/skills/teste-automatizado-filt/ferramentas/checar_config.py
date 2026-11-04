@@ -8,7 +8,8 @@ ARQ = os.path.join(HOME, 'config.json')
 EX = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', '..', 'config.example.json')
 OBRIG = ['erp.usuarios.principal.cpf', 'erp.usuarios.principal.senha', 'db.host', 'db.port', 'db.user', 'db.password',
          'playwright.nodeModules', 'playwright.chrome', 'saidaRelatorios']
-OPC = ['erp.usuarios.secundario.cpf', 'erp.usuarios.secundario.senha', 'figma.email', 'figma.senha',
+OPC = ['jira.email', 'jira.token', 'jenkins.usuario', 'jenkins.token',
+       'erp.usuarios.secundario.cpf', 'erp.usuarios.secundario.senha', 'figma.email', 'figma.senha',
        'producao.empresa', 'producao.basesTeste', 'producao.db.host', 'producao.db.user', 'producao.db.senha', 'producao.db.banco']
 def pega(c, k):
     for p in k.split('.'):
