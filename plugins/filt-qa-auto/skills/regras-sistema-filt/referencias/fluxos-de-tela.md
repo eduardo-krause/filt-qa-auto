@@ -60,6 +60,7 @@ Natureza **CT-E ENTRADA** → Número CT-e, Série, Emitente → **Adicionar Doc
 - Banco: `GRUPO_USUARIO_ACAO (ID_GRUPO_USUARIO, ID_MENU_ACAO)`; vínculo usuário×grupo×filial em `GRUPO_USUARIO_FILIAL`. Ids de menu/ação vêm de `menus-by-user` (campo `acoes[].id`). `USUARIO.TIPO_USUARIO='S'` (principal) enxerga tudo.
 - Excluir grupo: lixeira `.ph-trash` na linha da lista → "Tem certeza que deseja excluir?" Excluir → `DELETE /api/master/grupo-usuario/{id}`.
 - Sem permissão, a rota aberta direto cai em `/401` ("Uma autorização é necessária").
+- **Administrador sempre pode:** usuário com `USUARIO.TIPO_USUARIO='S'` (Tipo de Usuário administrador/supervisor) executa a ação mesmo vinculado a um grupo que não a concede. Se for bloqueado, é bug.
 - **Secundário fora do login do AT**: se a empresa `AT: nmtz-X` não aparece para o secundário, abrir Cadastros › Usuários (`/master/usuario`) → o usuário → **Salvar** sem mudar nada refaz o vínculo.
 
 ## Etiquetas

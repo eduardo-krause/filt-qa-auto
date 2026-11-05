@@ -3,7 +3,7 @@ const a = require('../../_adb');
 const i = require('../../_app-item');
 
 module.exports = {
-  // args: { usuario?: 'secundario', base: 'BASE KRAUSE', filial: '1000 - BASE KRAUSE' } → texto da tela inicial
+  // args: { usuario?: 'secundario', base: '<nome da base>', filial: '<código - nome da filial>' } → texto da tela inicial
   async entrar(t, { usuario = 'secundario', base, filial }) {
     a.login(usuario);
     const empresa = a.elementos().find((e) => /^CLIENTE_|^[A-Z].*/.test(e.rotulo) && e.y > 1300 && e.y < 1500 && !/Entrar|senha/i.test(e.rotulo));
