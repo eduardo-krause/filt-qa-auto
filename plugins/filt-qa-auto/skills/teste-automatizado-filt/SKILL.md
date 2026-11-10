@@ -1,6 +1,6 @@
 ---
-name: teste-automatizado-filt
-description: Valida uma tarefa do Jira (NMTZ-XXXX) do ERP Filt/Nimitz de ponta a ponta executando os testes por uma suíte automatizada — lê a tarefa, monta o plano (com casos de limite/negativos), monta ou reaproveita a suíte da tarefa, roda no AT da própria tarefa (tela com Playwright + conferência no banco), analisa cada resultado e gera o PDF com parecer. Só roda quando a pessoa digita /teste-automatizado-filt.
+name: teste-tarefa
+description: Valida uma tarefa do Jira (NMTZ-XXXX) do ERP Filt/Nimitz de ponta a ponta executando os testes por uma suíte automatizada — lê a tarefa, monta o plano (com casos de limite/negativos), monta ou reaproveita a suíte da tarefa, roda no AT da própria tarefa (tela com Playwright + conferência no banco), analisa cada resultado e gera o PDF com parecer. Só roda quando a pessoa digita /teste-tarefa (ou /filt-qa-auto:teste-tarefa).
 disable-model-invocation: true
 ---
 

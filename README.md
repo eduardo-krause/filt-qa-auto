@@ -1,6 +1,6 @@
 # filt-qa-auto — testes automatizados do ERP Filt
 
-Plugin do Claude Code com a skill **`/teste-automatizado-filt`**: **valida uma tarefa NMTZ de ponta a ponta** — lê a tarefa, monta o plano (com casos de limite e negativos), executa os testes por uma **suíte que roda sozinha** no AT da tarefa (tudo pela tela, conferindo cada resultado no banco), analisa e gera o PDF com parecer. A suíte fica salva para os retestes.
+Plugin do Claude Code com a skill **`/teste-tarefa`**: **valida uma tarefa NMTZ de ponta a ponta** — lê a tarefa, monta o plano (com casos de limite e negativos), executa os testes por uma **suíte que roda sozinha** no AT da tarefa (tudo pela tela, conferindo cada resultado no banco), analisa e gera o PDF com parecer. A suíte fica salva para os retestes.
 
 **Para que serve:** retestar depois de um deploy ou de uma correção sem refazer tudo à mão. A suíte roda todos os casos e entrega a lista de quem passou e quem não passou; o julgamento (é bug? mudou a tela?) continua sendo de quem valida.
 
@@ -53,7 +53,7 @@ Execute na ordem, sem pedir que a pessoa rode comando. Avise em uma linha o que 
    ```
    Desinstala `filt-qa@filt-qa` e o marketplace `filt-qa`, apaga as tarefas agendadas antigas ("filt-qa - atualizar plugin", "filt-qa - enviar regras" / linhas do crontab), guarda os scripts delas e cópias locais antigas de skill em `~/.claude/filt-qa/_antigo-filt-qa/` e agenda **"filt-qa-auto - atualizar plugin"** (segunda 08:30). **Mantém** `~/.claude/filt-qa/config.json` (mesmo formato), `fluxos-novos.md` e `~/.claude/historico-validacoes/`. Sem o plugin antigo, só agenda a atualização.
 3. **Preparar a máquina** — mesma pasta: `python configurar.py` e depois `python checar_config.py`, seguindo [`primeira-vez.md`](plugins/filt-qa-auto/skills/teste-automatizado-filt/referencias/primeira-vez.md) (instala Playwright/navegador/Node se faltar e pede **só** os dados pessoais que faltam — quem vinha do filt-qa já tem quase tudo). Depois `npm install` na pasta `motor/`.
-4. **Encerrar:** pedir que a pessoa feche e abra o Claude Code (para sair a skill antiga `/validar-tarefa-filt` e entrar a nova) e dizer como usar: **`/teste-automatizado-filt`** + chave da tarefa, URL do AT e base.
+4. **Encerrar:** pedir que a pessoa feche e abra o Claude Code (para sair a skill antiga `/validar-tarefa-filt` e entrar a nova) e dizer como usar: **`/teste-tarefa`** + chave da tarefa, URL do AT e base.
 
 Nunca gravar CPF, senha ou dados de banco fora do `~/.claude/filt-qa/config.json` da própria pessoa.
 

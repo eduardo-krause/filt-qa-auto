@@ -29,7 +29,7 @@ def usos(caminho, vistos):
 
 for arq in sorted(glob.glob(os.path.join(raiz, "*", "*.jsonl")), key=os.path.getmtime):
     texto = open(arq, encoding="utf-8", errors="replace").read()
-    if "teste-automatizado-filt" not in texto:
+    if "teste-automatizado-filt" not in texto and "teste-tarefa" not in texto:
         continue
     tarefas = Counter(re.findall(r"NMTZ-\d{4,5}", texto))
     tarefa = tarefas.most_common(1)[0][0] if tarefas else "?"
