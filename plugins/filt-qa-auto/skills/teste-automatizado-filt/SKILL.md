@@ -18,7 +18,7 @@ O plugin é **independente**: regras do sistema, critérios, ferramentas e relat
 | **Suíte** | `~/.claude/historico-validacoes/<NMTZ>/automacao/suite.js` | os casos de UMA tarefa: dados, passos e resultado esperado. Fica fora do plugin porque tem base/cliente da pessoa |
 | **Nome dos casos** | na suíte | `id` em kebab-case com tela + ação + dado (`caso-04-calculo-simples-qtd-10-20`, `faturar-pedido-app-407-receituario`), título em frase completa. Nada de sigla (`ESTQ`, `P407`) |
 | **Resultado** | `.../<NMTZ>/automacao/resultados/` | `ultimo.md` (legível), `.json` completo e `casos-para-dados-json.json` (formato do relatório) |
-| **Ferramentas** | `ferramentas/` (nesta skill) | scripts para o que a suíte não cobre: `run.js`/`browser.js` (tela, casos manuais, produção), `db.py` (consulta), `jira.py` (tarefa pela API, só leitura), `apk.py` (APK do app), `checar_dfe.py`, `gravar.js` (vídeo, só se pedido), `relatorio.py` (PDF), `configurar.py`/`checar_config.py` (preparar a máquina). Uso em `referencias/ferramentas.md` |
+| **Ferramentas** | `ferramentas/` (nesta skill) | scripts para o que a suíte não cobre: `run.js`/`browser.js` (tela, casos manuais, produção), `db.py` (consulta), `jira.py` (tarefa pela API, só leitura), `apk.py` (APK do app), `checar_dfe.py`, `gravar.js` (vídeo, só se pedido), `relatorio.py` (PDF), `configurar.py`/`checar_config.py`/`migrar_filt_qa.py` (preparar a máquina e tirar o filt-qa antigo). Uso em `referencias/ferramentas.md` |
 | **Índice por tela** | `~/.claude/historico-validacoes/indice-testes-automatizados.md` | todos os casos automatizados de todas as tarefas, agrupados pela tela que usam |
 
 Guia para escrever suíte e passo: `referencias/escrever-suite.md` (ler ao montar ou alterar uma suíte).
@@ -31,6 +31,7 @@ Referências em `referencias/` (ler quando a situação aparecer): `criterios-de
 
 ## Preparar (sem perguntar nada)
 1. Na pasta `ferramentas/`: `python checar_config.py` (no Linux/WSL, `python3`). Se não der `ok: true`, ler `referencias/primeira-vez.md` e preparar a máquina e os dados da pessoa antes de tudo. Se `opcionais_faltando` trouxer `jira.token` ou `jenkins.token`, pedir à pessoa (junto com o Passo 0, uma vez só) as chaves de API, com o passo a passo de `primeira-vez.md` — elas poupam os tokens dela; se recusar, seguir pelo conector MCP.
+   Se vier `migrar: true`, rodar `python migrar_filt_qa.py` (mesma pasta) **antes de tudo**: tira o plugin antigo `filt-qa` e as tarefas agendadas dele e agenda a atualização semanal do `filt-qa-auto`, mantendo `config.json`, `fluxos-novos.md` e o histórico. Dizer à pessoa em uma linha o que foi removido; se `reiniciar_claude: true`, pedir que feche e abra o Claude Code depois desta validação.
 2. Na pasta `motor/`: se não houver `node_modules`, rodar `npm install` (instala só o `mysql2`; o Playwright é o do `config.json` → `playwright.nodeModules`).
 
 ## Passo 0 — Antes de começar, SEMPRE pedir à pessoa

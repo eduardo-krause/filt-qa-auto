@@ -28,5 +28,6 @@ if not os.path.exists(ARQ):
 c = json.load(open(ARQ, encoding='utf-8'))
 falt = [k for k in OBRIG if vazio(pega(c, k))]
 opc = [k for k in OPC if vazio(pega(c, k))]
-print(json.dumps({'ok': not falt, 'arquivo': ARQ, 'faltando': falt, 'opcionais_faltando': opc}, ensure_ascii=False, indent=1))
+migrar = not os.path.exists(os.path.join(HOME, 'migracao-filt-qa-auto.json'))
+print(json.dumps({'ok': not falt, 'arquivo': ARQ, 'faltando': falt, 'opcionais_faltando': opc, 'migrar': migrar}, ensure_ascii=False, indent=1))
 sys.exit(0 if not falt else 1)

@@ -1,6 +1,7 @@
 # Primeira vez — preparar a máquina e os dados da pessoa
 
 A pessoa só instalou o plugin; **todo o resto é feito aqui, sem pedir que ela rode comando**. Antes de qualquer validação:
+0. Rodar `python migrar_filt_qa.py` (pasta `ferramentas`). Se a máquina tinha o plugin antigo **filt-qa** (skill `/validar-tarefa-filt`), ele é desinstalado junto com o marketplace e as tarefas agendadas dele ("filt-qa - atualizar plugin", "filt-qa - enviar regras"); o `config.json` antigo continua valendo (mesmo lugar e formato), então o passo 4 só pede o que faltar. Também agenda a atualização semanal do filt-qa-auto. Pode repetir sem problema.
 1. Rodar `python configurar.py` (na pasta `ferramentas` desta skill; **no Linux/WSL use `python3`** em todos os comandos Python deste skill). Ele instala o que falta (bibliotecas Python, Playwright, navegador, ffmpeg), descobre os caminhos e cria `~/.claude/filt-qa/config.json`. Devolve um JSON com `feito`, `faltando_programas`, `avisos` e `config.faltando`.
 2. Se vier `faltando_programas` (Node.js ou Git):
    - **Windows:** avisar em uma frase ("vou instalar o Node.js, que o teste automatizado usa") e instalar com o comando `winget` informado.

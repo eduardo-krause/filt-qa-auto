@@ -36,9 +36,26 @@ AT https://erp-homologacao-nmtz-00000… · base … · front 5018 · DF-e ok ·
 ```
 
 ## Instalação
-O plugin é **independente** (desde a v0.5.0 traz junto a skill `regras-sistema-filt`, os critérios de julgamento, as ferramentas de tela/banco e o gerador do PDF — o plugin `filt-qa` não é mais necessário).
-1. No Claude Code: `/plugin marketplace add <URL deste repositório>` e `/plugin install filt-qa-auto@filt-qa-auto`.
-2. Na primeira vez, a skill roda `ferramentas/configurar.py` (instala Playwright/navegador e cria `~/.claude/filt-qa/config.json`, pedindo só os dados pessoais) e `npm install` na pasta `motor/` (instala o `mysql2`).
+
+**Para a pessoa:** cole o link deste repositório no Claude Code e peça para instalar. O Claude faz o resto (inclusive tirar o plugin antigo `filt-qa`, se você tiver).
+
+### Instruções para o Claude Code (quem recebeu este link)
+Execute na ordem, sem pedir que a pessoa rode comando. Avise em uma linha o que vai fazer e siga.
+1. **Adicionar o marketplace e instalar** (sempre pela URL HTTPS — o formato curto `eduardo-krause/filt-qa-auto` usa SSH e falha):
+   ```
+   claude plugin marketplace add https://github.com/eduardo-krause/filt-qa-auto.git
+   claude plugin install filt-qa-auto@filt-qa-auto
+   ```
+   O repositório é **privado**: se der erro de autenticação ou "not found", a conta GitHub da pessoa precisa ter sido convidada como colaboradora (pedir ao mantenedor) e o Git precisa estar logado (`gh auth login` + `gh auth setup-git`, ou o login do Git Credential Manager na primeira vez). Se já existir o marketplace, só `claude plugin marketplace update filt-qa-auto`.
+2. **Tirar o plugin antigo e agendar a atualização** — na pasta `ferramentas` do plugin instalado (`~/.claude/plugins/cache/filt-qa-auto/filt-qa-auto/<versão>/skills/teste-automatizado-filt/ferramentas`; no Linux/WSL use `python3`):
+   ```
+   python migrar_filt_qa.py
+   ```
+   Desinstala `filt-qa@filt-qa` e o marketplace `filt-qa`, apaga as tarefas agendadas antigas ("filt-qa - atualizar plugin", "filt-qa - enviar regras" / linhas do crontab), guarda os scripts delas e cópias locais antigas de skill em `~/.claude/filt-qa/_antigo-filt-qa/` e agenda **"filt-qa-auto - atualizar plugin"** (segunda 08:30). **Mantém** `~/.claude/filt-qa/config.json` (mesmo formato), `fluxos-novos.md` e `~/.claude/historico-validacoes/`. Sem o plugin antigo, só agenda a atualização.
+3. **Preparar a máquina** — mesma pasta: `python configurar.py` e depois `python checar_config.py`, seguindo [`primeira-vez.md`](plugins/filt-qa-auto/skills/teste-automatizado-filt/referencias/primeira-vez.md) (instala Playwright/navegador/Node se faltar e pede **só** os dados pessoais que faltam — quem vinha do filt-qa já tem quase tudo). Depois `npm install` na pasta `motor/`.
+4. **Encerrar:** pedir que a pessoa feche e abra o Claude Code (para sair a skill antiga `/validar-tarefa-filt` e entrar a nova) e dizer como usar: **`/teste-automatizado-filt`** + chave da tarefa, URL do AT e base.
+
+Nunca gravar CPF, senha ou dados de banco fora do `~/.claude/filt-qa/config.json` da própria pessoa.
 
 ## Segurança
 - Só roda no **AT da própria tarefa**; produção e AT de outra demanda são bloqueados no login.
