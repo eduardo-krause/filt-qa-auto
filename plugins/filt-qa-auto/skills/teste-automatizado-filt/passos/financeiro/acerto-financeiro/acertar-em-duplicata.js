@@ -21,7 +21,7 @@ module.exports = {
     await ops.nth(i).click(); await tela.pronto(p);
     await dlg.getByRole('button', { name: 'Gerar', exact: true }).first().click(); await tela.pronto(p, 800);
     const linhas = dlg.locator('tbody tr');
-    for (let k = 0; k < vencs.length; k++) await tela.data(p, linhas.nth(k).locator('input').first(), vencs[k]);
+    for (let k = 0; k < vencs.length; k++) await tela.data(p, linhas.nth(k).locator('p-calendar input, input:not([type=checkbox])').first(), vencs[k]);
     const parcelas = (await linhas.allInnerTexts()).map(limpo);
     if (!concluir) return { parcelas };
     await dlg.getByRole('button', { name: 'Salvar', exact: true }).first().click(); await tela.pronto(p, 800);

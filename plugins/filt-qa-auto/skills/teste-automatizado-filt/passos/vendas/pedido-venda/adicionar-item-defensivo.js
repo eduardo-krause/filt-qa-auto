@@ -9,9 +9,11 @@ module.exports = {
     const busca = p.locator('input[placeholder="Pesquise o item"]');
     await busca.click(); await busca.fill(''); await p.keyboard.type(item, { delay: 40 }); await p.keyboard.press('Enter'); await tela.pronto(p, 1500);
     // o card do resultado com o nome do item (a lista pode ainda mostrar o resultado da busca anterior)
-    const card = p.locator('div:has(> * input.input-quantidade), div:has(input.input-quantidade)').filter({ hasText: item }).last();
+    // item com embalagem cadastrada usa input.input-quantidade-embalagem (com o seletor de Embalagem ao lado)
+    const QTD = 'input.input-quantidade, input.input-quantidade-embalagem';
+    const card = p.locator(`div:has(${QTD})`).filter({ hasText: item }).last();
     await card.waitFor({ timeout: 30000 });
-    const q = card.locator('input.input-quantidade').first();
+    const q = card.locator(QTD).last();
     await tela.digitar(p, q, tela.qtd(qtd, casas));
     const lido = Number((await q.inputValue()).replace(/\./g, '').replace(',', '.'));
     if (lido !== qtd) throw new Error(`quantidade do ${item} ficou ${lido} (esperado ${qtd})`);

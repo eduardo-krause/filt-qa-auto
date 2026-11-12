@@ -11,6 +11,8 @@ class FalhaConferencia extends Error {}
 function iguais(esperado, obtido) {
   if (esperado instanceof RegExp) return esperado.test(String(obtido));
   if (typeof esperado === 'number' || (typeof obtido === 'number' && !isNaN(Number(esperado)) && esperado !== null && esperado !== '')) return Math.abs(Number(esperado) - Number(obtido)) < 0.005;
+  // lista: mesmo tamanho e item a item (antes só conferia os índices do esperado — [] passava com qualquer lista)
+  if (Array.isArray(esperado)) return Array.isArray(obtido) && obtido.length === esperado.length && esperado.every((v, i) => iguais(v, obtido[i]));
   if (esperado && typeof esperado === 'object') return obtido && typeof obtido === 'object' && Object.keys(esperado).every((k) => iguais(esperado[k], obtido[k]));
   return String(esperado ?? '').trim() === String(obtido ?? '').trim();
 }

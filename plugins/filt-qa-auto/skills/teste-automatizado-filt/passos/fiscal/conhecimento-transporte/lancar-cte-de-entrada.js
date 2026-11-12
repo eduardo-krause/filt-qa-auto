@@ -1,7 +1,8 @@
 // Tela: Movimentações Fiscais › Conhecimento de Transportes (/fiscal/conhecimento-de-transporte)
 
 module.exports = {
-  // args: { notas:[NUMERO_DOCUMENTO], pessoa (fornecedor das notas = remetente), emitente, cidade, valor, natureza? }
+  // args: { notas:[NUMERO_DOCUMENTO], pessoa (fornecedor das notas = remetente), emitente, cidade, valor, natureza?,
+  //         duplicata?: { conta, parcelamento, vencs? } (acerto em Duplicata; sem ele o acerto é Dinheiro) }
   // → { id } (ID_CONHECIMENTO_TRANSPORTE lido do banco)
   async entrada(t, a) {
     const { p, tela } = t;
@@ -34,7 +35,11 @@ module.exports = {
     const linhaFrete = p.locator('tr', { hasText: 'Frete' }).last();
     await tela.digitar(p, linhaFrete.locator('input').last(), tela.moeda(a.valor));
     let s = await tela.salvar(p);
-    if (s.status === 'acerto_financeiro') {
+    if (s.status === 'acerto_financeiro' && a.duplicata) {
+      // acerto em Duplicata (gera duplicata a pagar do CT-e): a.duplicata = { conta, parcelamento, vencs? }
+      await require('../../financeiro/acerto-financeiro/acertar-em-duplicata').duplicata(t, a.duplicata);
+      s = await tela.salvar(p);
+    } else if (s.status === 'acerto_financeiro') {
       const d = await tela.dialogo(p);
       await d.locator('text=Dinheiro').first().click(); await tela.pronto(p, 800);
       await d.locator('button:has-text("Salvar")').first().click(); await tela.pronto(p, 800);

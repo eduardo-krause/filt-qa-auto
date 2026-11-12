@@ -7,7 +7,11 @@ module.exports = {
     const { p, tela } = t;
     await tela.abrir(p, '/vendas/aprovacao-pedidos');
     const empresa = cfg.lerSessao().empresa || '';
-    const linha = p.locator('tbody tr').filter({ hasText: new RegExp(`${empresa.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+${pedido}\\s`) }).first();
+    // a linha começa pela filial ("1000 - BASE KRAUSE 549 04/11/2026 ..."), que nem sempre é o nome da empresa da sessão:
+    // aceita "<empresa> <pedido> " ou "<pedido> <data>"
+    const esc = empresa.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`${esc ? esc + '\\s+' + pedido + '\\s|' : ''}(^|\\s)${pedido}\\s+\\d{2}/\\d{2}/\\d{4}`);
+    const linha = p.locator('tbody tr').filter({ hasText: re }).first();
     await linha.waitFor({ timeout: 30000 }).catch(() => {});   // a lista carrega depois da tela
     if (!(await linha.count())) throw new Error(`pedido ${pedido} não aparece na Aprovação Pedido`);
     await linha.getByText('APROVAR', { exact: true }).evaluate((e) => (e.closest('button') || e).click()); await tela.pronto(p);

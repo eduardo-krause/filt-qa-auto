@@ -3,7 +3,7 @@ const { situacaoSql, abrirCarrinho, incluirItem } = require('../../_pedido');
 
 module.exports = {
   // Novo pedido completo: condições de venda → itens → (cartão) → Concluir Pedido.
-  // args: { natureza, cliente, vendedor?, parametro?, forma, parcelamento?, dataPagamento?, itens:[{item, qtd, casas, desconto?}],
+  // args: { natureza, cliente, vendedor?, parametro?, forma, parcelamento?, dataPagamento?, itens:[{item, qtd, casas, desconto?, valor?}],
   //         cartao?: { parcelamento: '3X' }, concluir?: true }
   // devolve { pedido, status } (status do banco depois de concluir: APROVADO, ANALISE...)
   async criar(t, a) {
