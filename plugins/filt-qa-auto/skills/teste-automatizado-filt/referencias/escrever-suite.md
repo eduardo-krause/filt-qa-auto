@@ -45,6 +45,15 @@ Além dos casos da tarefa, toda suíte leva uma seção **"ADICIONADO — limite
 
 Para cada um, conferir no banco que a validação barra **antes de gravar**: ação que grava na hora (ex.: Remover item na edição) e só é barrada no Concluir deixa o registro inconsistente — isso é bug.
 
+### Permissão isolada (obrigatório em toda tarefa que mexe numa tela)
+O dev pode fazer a tela nova/alterada chamar buscas de outros cadastros que exigem a permissão deles, mesmo quando a tarefa nem fala de permissão. Por isso toda suíte leva **"ADICIONADO — permissão isolada"**, com o usuário **secundário não supervisor** (TIPO N; supervisor recebe tudo e esconde o bug):
+- grupo com **só** a permissão Visualizar da tela da tarefa, sem as dos cadastros relacionados (ex.: só Painéis › Metas, sem Cadastros › Metas › Meta);
+- abrir a tela e usar **tudo** o que a tarefa criou ou mudou: filtros, autocompletes, abas, botões, gráficos. Nenhuma mensagem de "autorização necessária" e nenhuma busca com 401/403;
+- se o caso do Jira já descreve uma combinação de permissões, testar a combinação dele **e** a permissão isolada;
+- permissão só vale depois de recarregar (`entrar-com-usuario.js`).
+
+Origem: a NMTZ-12370 passou no caso 14 com Visualizar no painel **e** no Cadastro de Metas (como o caso pedia). Um cliente com só a do painel foi bloqueado, e isso virou o bug NMTZ-12565.
+
 ### Todo caso precisa de conferência
 O motor só dá **OK** se o caso registrou **pelo menos uma** conferência (`t.confere` / `t.confereBanco`, na suíte ou dentro de um passo) e todas bateram. Caso que termina sem nenhuma vira **ERRO** ("nenhuma conferência registrada"): só navegar sem erro não comprova o esperado.
 

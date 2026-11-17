@@ -59,6 +59,7 @@ Regra de negócio que **não** estiver nessas fontes não é deduzida da tela: p
 - **Reprovações anteriores** como casos (`R01`, `R02`...).
 - **ADICIONADO — fluxos vizinhos** (cancelamento, exclusão, devolução, venda futura, permissões, telas que mostram o dado).
 - **ADICIONADO — limites/negativos** em volta de cada valor/quantidade que a tarefa mexe (reduzir abaixo do lançado, passar do saldo, ordem inversa/repetida, editar depois de faturar/antecipar), conferindo que a validação barra **antes** de gravar.
+- **ADICIONADO — permissão isolada** (sempre que a tarefa mexe numa tela, mesmo sem falar de permissão): usuário **não supervisor** com **só** a permissão da tela da tarefa (sem a dos cadastros relacionados) usa tudo o que a tarefa criou/mudou (abrir, filtros, autocompletes, botões) sem "autorização necessária". Detalhes em `referencias/escrever-suite.md`.
 - O que não dá para automatizar (layout, impressão física, conferência visual) fica no plano como **manual** e é feito pela tela com `ferramentas/run.js` (`referencias/ferramentas.md`; mesmo usuário → não rodar junto com a suíte).
 - Mostrar o plano à pessoa e **seguir direto** (não esperar ok), a menos que haja dúvida de regra de negócio.
 
