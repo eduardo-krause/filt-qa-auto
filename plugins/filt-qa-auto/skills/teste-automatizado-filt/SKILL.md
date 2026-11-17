@@ -83,7 +83,7 @@ O terminal mostra uma linha por caso; o detalhe está em `resultados/ultimo.md`.
 | Status | Quer dizer | O que fazer |
 |---|---|---|
 | ✅ OK | todas as conferências bateram | conferir que o caso testou o que devia (o próprio teste pode estar errado) |
-| ❌ FALHOU | valor diferente do esperado | **possível bug**: conferir no banco, na tela e no código; reproduzir antes de afirmar; se confirmar, vira reprovação (numeração do Jira) ou bug fora da tarefa |
+| ❌ FALHOU | valor diferente do esperado | **possível bug**: conferir no banco, na tela e no código; reproduzir antes de afirmar; se confirmar, vira reprovação (o PDF numera 1, 2, 3…) ou bug fora da tarefa |
 | ⚠️ ERRO | o passo não conseguiu agir | olhar a evidência; tela mudou → consertar o **passo** e rodar o caso de novo; comportamento novo do sistema → investigar como bug |
 | ⛔ BLOQUEADO | AT travado, sessão derrubada, DF-e em produção, estoque | parar e avisar a pessoa (ou preparar o dado, se for pré-condição) |
 | ⏭️ PULADO | dependia de um caso que não deu OK / caso manual | resolver o anterior e rodar de novo |

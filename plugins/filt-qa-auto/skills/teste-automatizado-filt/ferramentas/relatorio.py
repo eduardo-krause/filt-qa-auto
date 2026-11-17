@@ -36,7 +36,7 @@ Formato do JSON (campos marcados com ? são opcionais):
 Seções: 1 Como foi testado · 2 Casos da tarefa · 3 Casos adicionados · 4 Reprovações e problemas (passo a passo) · 5 Pontos para a PO.
 Regra: parecer "aprovar" só é permitido com todos os casos da tarefa em OK. O PDF não leva prints.
 """
-import html, json, os, subprocess, sys
+import html, json, os, re, subprocess, sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 HOME = os.environ.get('FILT_QA_HOME') or os.path.join(os.path.expanduser('~'), '.claude', 'filt-qa')
@@ -107,8 +107,10 @@ def problema(p, n=None):
              + campo('Onde conferir:', p.get('conferir')) + campo('Impacto:', p.get('impacto'))
              + campo('Produção:', p.get('producao')) + campo('Vídeo:', p.get('video')))
     desc = f'<div class="desc">{p.get("descricao")}</div>' if p.get('descricao') else ''
-    num = f'4.{n} · ' if n else ''
-    return f'<div class="bug {"fora" if fora else "tar"}"><h3>{num}{tag} {esc(p.get("titulo"))}{grav}</h3>{corpo}{desc}</div>'
+    # numeração simples e seguida (1, 2, 3...): o número vem da posição, nunca do título
+    titulo = re.sub(r'^\s*Reprova[çc][ãa]o\s*\d+\s*[-–—:·]\s*', '', str(p.get('titulo') or ''), flags=re.I)
+    num = (f'{"Fora da tarefa" if fora else "Reprovação"} {n} — ') if n else ''
+    return f'<div class="bug {"fora" if fora else "tar"}"><h3>{tag} {num}{esc(titulo)}{grav}</h3>{corpo}{desc}</div>'
 
 CSS = """
 @page{size:A4;margin:14mm 12mm}
@@ -176,7 +178,8 @@ def main():
             print(f"AVISO: problema '{p.get('titulo')}' sem passo a passo.")
     da_tarefa = [p for p in probs if 'fora' not in (p.get('escopo') or '').lower()]
     fora = [p for p in probs if 'fora' in (p.get('escopo') or '').lower()]
-    probs_html = ''.join(problema(p, i) for i, p in enumerate(da_tarefa + fora, 1)) or '<p class="vazio">Nenhuma reprovação nem problema encontrado.</p>'
+    probs_html = (''.join(problema(p, i) for i, p in enumerate(da_tarefa, 1))
+                  + ''.join(problema(p, i) for i, p in enumerate(fora, 1))) or '<p class="vazio">Nenhuma reprovação nem problema encontrado.</p>'
     po = ''.join(f'<div class="obs"><b>5.{i}</b> · {x}</div>' for i, x in enumerate(dados.get('pontos_po', []), 1)) or '<p class="vazio">Nenhum.</p>'
     ne = nao_executados(todos)
     como = dados.get('como_testado', [])
